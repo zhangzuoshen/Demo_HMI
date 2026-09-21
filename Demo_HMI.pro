@@ -12,6 +12,7 @@ HEADERS += \
     ApplicationBootstrap.h \
     Log.h \
     PageManager.h \
+    PageView.h \
     SceneContainer.h
 
 SOURCES += \
@@ -21,6 +22,7 @@ SOURCES += \
         ApplicationBootstrap.cpp \
         Log.cpp \
         PageManager.cpp \
+        PageView.cpp \
         SceneContainer.cpp \
         main.cpp
 

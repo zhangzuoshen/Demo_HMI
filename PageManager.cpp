@@ -70,9 +70,6 @@ void PageManager::changeState(
 
     instance.state=state;
 
-    if(instance.context)
-        instance.context->setState(state);
-
     qCInfo(logPageManager)
             << "["
             << instance.instanceId
@@ -80,6 +77,9 @@ void PageManager::changeState(
             << instance.info.appId
             << "State ->"
             << state;
+
+    if(instance.context)
+        instance.context->setState(state);
 }
 
 AppInstance *PageManager::findInstance(
