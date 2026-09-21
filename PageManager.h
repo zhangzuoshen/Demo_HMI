@@ -33,12 +33,10 @@ public:
                          QObject *parent=nullptr);
 
     QString currentAppId() const;
-
     quint64 currentInstanceId() const;
 
-    const AppInstance *currentApp() const;
-
-    const QVector<AppInstance>& stack() const;
+    AppInstance currentApp() const;
+    const QVector<AppInstance> &stack() const;
 
     Q_INVOKABLE void launchApp(
             const QString &appId,
@@ -46,14 +44,14 @@ public:
 
     Q_INVOKABLE void back();
 
+    // SceneContainer 在页面创建完成后调用
     void pageReady(quint64 instanceId);
 
 signals:
 
-    // SceneContainer监听
+    // SceneContainer 监听
     void currentChanged();
 
-    // 生命周期状态变化
     void instanceCreated(
             quint64 instanceId,
             QString appId);
@@ -61,10 +59,6 @@ signals:
     void instanceDestroyed(
             quint64 instanceId,
             QString appId);
-
-    void instanceStateChanged(
-            quint64 instanceId,
-            int state);
 
 private:
 
@@ -75,8 +69,10 @@ private:
             AppInstance &instance,
             AppState::State state);
 
-    int findTask(
-            const QString &appId) const;
+    AppInstance *findInstance(quint64 instanceId);
+    const AppInstance *findInstance(quint64 instanceId) const;
+
+    int findTask(const QString &appId) const;
 
 private:
 
@@ -85,8 +81,6 @@ private:
     QVector<AppInstance> m_stack;
 
     quint64 m_nextInstanceId=1;
-
-    quint64 m_pendingReadyId=0;
 };
 
 #endif

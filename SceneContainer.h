@@ -5,7 +5,6 @@
 #include <QQmlContext>
 #include <QQmlComponent>
 
-#include "AppContext.h"
 #include "AppInstance.h"
 
 class PageManager;
@@ -21,10 +20,10 @@ class SceneContainer : public QQuickItem
 
 public:
 
-    explicit SceneContainer(QQuickItem *parent=nullptr);
-    ~SceneContainer();
+    explicit SceneContainer(QQuickItem *parent = nullptr);
+    ~SceneContainer() override;
 
-    QObject* pageManager() const;
+    QObject *pageManager() const;
     void setPageManager(QObject *mgr);
 
 signals:
@@ -33,9 +32,8 @@ signals:
 
 protected:
 
-    void geometryChanged(
-            const QRectF &newGeometry,
-            const QRectF &oldGeometry) override;
+    void geometryChanged(const QRectF &newGeometry,
+                         const QRectF &oldGeometry) override;
 
 private slots:
 
@@ -48,19 +46,17 @@ private:
 
 private:
 
-    QObject *m_pageManager=nullptr;
+    QObject *m_pageManager = nullptr;
 
-    QQmlEngine *m_engine=nullptr;
+    QQmlEngine *m_engine = nullptr;
 
-    QQmlContext *m_context=nullptr;
+    QQmlContext *m_context = nullptr;
 
-    AppContext *m_appContext=nullptr;
+    QQmlComponent *m_component = nullptr;
 
-    QQmlComponent *m_component=nullptr;
-
-    QQuickItem *m_rootItem=nullptr;
+    QQuickItem *m_rootItem = nullptr;
 
     AppInstance m_currentInstance;
 };
 
-#endif
+#endif // SCENECONTAINER_H

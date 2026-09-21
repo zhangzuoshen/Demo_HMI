@@ -7,29 +7,12 @@ BasePage {
     //==============================
     // 生命周期
     //==============================
-    function onCreate() {
-        console.log("[Media] Create")
-    }
-
-    function onEnter() {
-        console.log("[Media] Enter")
-    }
-
-    function onPause() {
-        console.log("[Media] Pause")
-    }
-
-    function onResume() {
-        console.log("[Media] Resume")
-    }
-
-    function onExit() {
-        console.log("[Media] Exit")
-    }
-
-    function onDestroy() {
-        console.log("[Media] Destroy")
-    }
+    function onCreate(){console.log("[Media] Create")}
+    function onReady(){console.log("[Media] Ready")}
+    function onEnter(){console.log("[Media] Enter")}
+    function onPause(){console.log("[Media] Pause")}
+    function onResume(){console.log("[Media] Resume")}
+    function onDestroy(){console.log("[Media] Destroy")}
 
     Column {
         anchors.centerIn: parent

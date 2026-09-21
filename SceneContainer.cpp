@@ -1,12 +1,13 @@
 #include "SceneContainer.h"
 
 #include <QQmlEngine>
+#include <QQmlError>
 
+#include "AppContext.h"
 #include "PageManager.h"
 #include "Log.h"
 
-SceneContainer::SceneContainer(
-        QQuickItem *parent)
+SceneContainer::SceneContainer(QQuickItem *parent)
     : QQuickItem(parent)
 {
 }
@@ -16,18 +17,17 @@ SceneContainer::~SceneContainer()
     unload();
 }
 
-QObject* SceneContainer::pageManager() const
+QObject *SceneContainer::pageManager() const
 {
     return m_pageManager;
 }
 
-void SceneContainer::setPageManager(
-        QObject *mgr)
+void SceneContainer::setPageManager(QObject *mgr)
 {
-    if(m_pageManager==mgr)
+    if (m_pageManager == mgr)
         return;
 
-    if(m_pageManager)
+    if (m_pageManager)
     {
         disconnect(m_pageManager,
                    nullptr,
@@ -35,15 +35,14 @@ void SceneContainer::setPageManager(
                    nullptr);
     }
 
-    m_pageManager=mgr;
+    m_pageManager = mgr;
 
-    if(m_pageManager)
+    if (m_pageManager)
     {
-        connect(
-            m_pageManager,
-            SIGNAL(currentChanged()),
-            this,
-            SLOT(onCurrentChanged()));
+        connect(m_pageManager,
+                SIGNAL(currentChanged()),
+                this,
+                SLOT(onCurrentChanged()));
 
         onCurrentChanged();
     }
@@ -53,31 +52,30 @@ void SceneContainer::setPageManager(
 
 void SceneContainer::onCurrentChanged()
 {
-    auto mgr=
-            qobject_cast<PageManager*>(
-                m_pageManager);
+    auto mgr =
+            qobject_cast<PageManager *>(m_pageManager);
 
-    if(!mgr)
+    if (!mgr)
         return;
 
-    const AppInstance *instance = mgr->currentApp();
+    AppInstance instance =
+            mgr->currentApp();
 
-    if (!instance)
+    if (instance.instanceId == 0)
         return;
 
-    load(*instance);
+    load(instance);
 }
 
-void SceneContainer::load(
-        const AppInstance &instance)
+void SceneContainer::load(const AppInstance &instance)
 {
     unload();
 
-    m_currentInstance=instance;
+    m_currentInstance = instance;
 
-    m_engine=qmlEngine(this);
+    m_engine = qmlEngine(this);
 
-    if(!m_engine)
+    if (!m_engine)
         return;
 
     qCInfo(logScene)
@@ -86,8 +84,8 @@ void SceneContainer::load(
             << "#"
             << instance.instanceId;
 
-    // 创建 Context：
-    m_context=
+    // 创建独立 Context
+    m_context =
             new QQmlContext(
                 m_engine->rootContext(),
                 this);
@@ -96,35 +94,34 @@ void SceneContainer::load(
                 "AppContext",
                 instance.context);
 
-    // 创建组件：
-    QString path=
+    // 创建组件
+    QString path =
             instance.info.basePath;
 
-    path.replace(":/","qrc:/");
+    path.replace(":/", "qrc:/");
 
-    m_component=
+    m_component =
             new QQmlComponent(
                 m_engine,
-                QUrl(path+"/"+instance.info.entry),
+                QUrl(path + "/" + instance.info.entry),
                 this);
 
-    if(m_component->isError())
+    if (m_component->isError())
     {
-        qCWarning(logScene)
+        qWarning()
                 << m_component->errors();
 
         return;
     }
 
-    // 创建页面：
-    QObject *obj=
-            m_component->create(
-                m_context);
+    // 创建页面
+    QObject *obj =
+            m_component->create(m_context);
 
-    m_rootItem=
-            qobject_cast<QQuickItem*>(obj);
+    m_rootItem =
+            qobject_cast<QQuickItem *>(obj);
 
-    if(!m_rootItem)
+    if (!m_rootItem)
     {
         delete obj;
         return;
@@ -135,43 +132,44 @@ void SceneContainer::load(
     m_rootItem->setParentItem(this);
 
     m_rootItem->setWidth(width());
+
     m_rootItem->setHeight(height());
 
-    // 通知：
-    auto mgr = qobject_cast<PageManager *>(m_pageManager);
-    if (mgr) {
-        qCInfo(logScene)
-            << "Notify pageReady:"
-            << m_currentInstance.instanceId;
+    // 通知 Ready
+    auto mgr =
+            qobject_cast<PageManager *>(m_pageManager);
 
-        mgr->pageReady(m_currentInstance.instanceId);
+    if (mgr)
+    {
+        qCInfo(logScene)
+                << "Notify pageReady:"
+                << instance.instanceId;
+
+        mgr->pageReady(instance.instanceId);
     }
 }
 
 void SceneContainer::unload()
 {
-    if(m_rootItem)
+    if (m_rootItem)
     {
         m_rootItem->deleteLater();
-
-        m_rootItem=nullptr;
+        m_rootItem = nullptr;
     }
 
-    if(m_component)
+    if (m_component)
     {
         m_component->deleteLater();
-
-        m_component=nullptr;
+        m_component = nullptr;
     }
 
-    if(m_context)
+    if (m_context)
     {
         m_context->deleteLater();
-        m_context=nullptr;
+        m_context = nullptr;
     }
 }
 
-// 自动适配分辨率
 void SceneContainer::geometryChanged(
         const QRectF &newGeometry,
         const QRectF &oldGeometry)
@@ -180,7 +178,7 @@ void SceneContainer::geometryChanged(
                 newGeometry,
                 oldGeometry);
 
-    if(m_rootItem)
+    if (m_rootItem)
     {
         m_rootItem->setWidth(
                     newGeometry.width());
@@ -189,3 +187,4 @@ void SceneContainer::geometryChanged(
                     newGeometry.height());
     }
 }
+

@@ -7,10 +7,14 @@
 
 struct AppInstance;
 
+/**
+ * @brief 每个页面实例独立拥有的QML上下文
+ */
 class AppContext : public QObject
 {
     Q_OBJECT
 
+    // Manifest
     Q_PROPERTY(QString appId READ appId CONSTANT)
     Q_PROPERTY(QString appName READ appName CONSTANT)
     Q_PROPERTY(QString entry READ entry CONSTANT)
@@ -19,8 +23,9 @@ class AppContext : public QObject
     Q_PROPERTY(int priority READ priority CONSTANT)
     Q_PROPERTY(QString launchMode READ launchMode CONSTANT)
 
+    // Runtime
     Q_PROPERTY(quint64 instanceId READ instanceId CONSTANT)
-    Q_PROPERTY(bool firstLaunch READ firstLaunch CONSTANT)
+    Q_PROPERTY(bool firstLaunch READ firstLaunch NOTIFY firstLaunchChanged)
 
     Q_PROPERTY(AppState::State state
                READ state
@@ -28,7 +33,7 @@ class AppContext : public QObject
 
 public:
 
-    explicit AppContext(QObject *parent=nullptr);
+    explicit AppContext(QObject *parent = nullptr);
 
     void initialize(const AppInstance &instance);
 
@@ -44,14 +49,15 @@ public:
     quint64 instanceId() const;
 
     bool firstLaunch() const;
+    void setFirstLaunch(bool firstLaunch);
 
     AppState::State state() const;
-
     void setState(AppState::State state);
 
 signals:
 
     void stateChanged();
+    void firstLaunchChanged();
 
 private:
 
@@ -71,4 +77,4 @@ private:
     AppState::State m_state = AppState::None;
 };
 
-#endif
+#endif // APPCONTEXT_H

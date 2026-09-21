@@ -1,5 +1,4 @@
 import QtQuick 2.12
-
 import HMI.Core 1.0
 
 Item {
@@ -27,14 +26,14 @@ Item {
     //==============================
     // 生命周期（供子页面重写）
     //==============================
-    function onCreate() {}
-    function onReady() {}
-    function onEnter() {}
-    function onPause() {}
-    function onResume() {}
-    function onExit() {}
-    function onDestroy() {}
-    function onNewIntent() {}
+    function onCreate(){}
+    function onReady(){}
+    function onEnter(){}
+    function onPause(){}
+    function onResume(){}
+    function onCovered(){}
+    function onSuspend(){}
+    function onDestroy(){}
 
 
     //==============================
@@ -88,6 +87,8 @@ Item {
             console.log("[Page]", _cachedName,
                         "#" + _cachedInstance,
                         "Covered")
+
+            root.onCovered()
             break
 
         case AppState.Suspended:
@@ -95,6 +96,8 @@ Item {
             console.log("[Page]", _cachedName,
                         "#" + _cachedInstance,
                         "Suspended")
+
+            root.onSuspend()
             break
 
         case AppState.Destroyed:
@@ -151,12 +154,9 @@ Item {
     // 页面创建
     //==============================
     Component.onCompleted:{
-
         if (AppContext) {
-
             _cachedName = AppContext.appName
             _cachedInstance = AppContext.instanceId
-
         }
 
         console.log("[Page]",
@@ -166,11 +166,13 @@ Item {
 
         root.onCreate()
 
-        // 修复首次 Ready/Foreground 丢失
         if (AppContext)
             syncState(AppContext.state)
     }
 
+    //==========================
+    // 页面销毁
+    //==========================
     Component.onDestruction:{
 
         console.log("[Page]",
@@ -186,9 +188,7 @@ Item {
     //==============================
     Connections {
         target: AppContext
-
         onStateChanged: {
-
             if (AppContext)
                 syncState(AppContext.state)
         }
