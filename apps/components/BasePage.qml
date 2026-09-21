@@ -24,87 +24,66 @@ Item {
     property int lastState:AppState.None
 
     //==============================
-    // 生命周期（供子页面重写）
+    // 生命周期（Qt Signal）
     //==============================
-    function onCreate(){}
-    function onReady(){}
-    function onEnter(){}
-    function onPause(){}
-    function onResume(){}
-    function onCovered(){}
-    function onSuspend(){}
-    function onDestroy(){}
+    signal pageCreate()
+    signal pageReady()
+    signal pageEnter()
+    signal pagePause()
+    signal pageResume()
+    signal pageCovered()
+    signal pageSuspend()
+    signal pageDestroy()
+
+    signal windowAttached()
+    signal windowDetached()
+    signal windowVisible()
 
 
     //==============================
     // 生命周期状态同步
     //==============================
-    function syncState(state) {
+    function syncState(state)
+    {
+        var previous = lastState
+        lastState = state
 
-        switch (state) {
-
+        switch(state)
+        {
         case AppState.Ready:
-            console.log("[Page]", _cachedName,
-                        "#" + _cachedInstance,
-                        "Ready")
-
-            root.onReady()
+            console.log("[Page]",_cachedName,"#"+_cachedInstance,"Ready")
+            pageReady()
             break
 
         case AppState.Foreground:
 
-            if (lastState === AppState.Background) {
-
-                console.log("[Page]", _cachedName,
-                            "#" + _cachedInstance,
-                            "Resume")
-
-                root.onResume()
-
-            } else {
-
-                console.log("[Page]", _cachedName,
-                            "#" + _cachedInstance,
-                            "Enter")
-
-                root.onEnter()
-
+            if(previous===AppState.Background)
+            {
+                console.log("[Page]",_cachedName,"#"+_cachedInstance,"Resume")
+                pageResume()
             }
-
+            else
+            {
+                console.log("[Page]",_cachedName,"#"+_cachedInstance,"Enter")
+                pageEnter()
+            }
             break
 
         case AppState.Background:
-
-            console.log("[Page]", _cachedName,
-                        "#" + _cachedInstance,
-                        "Pause")
-
-            root.onPause()
+            console.log("[Page]",_cachedName,"#"+_cachedInstance,"Pause")
+            pagePause()
             break
 
         case AppState.Covered:
-
-            console.log("[Page]", _cachedName,
-                        "#" + _cachedInstance,
-                        "Covered")
-
-            root.onCovered()
+            console.log("[Page]",_cachedName,"#"+_cachedInstance,"Covered")
+            pageCovered()
             break
 
         case AppState.Suspended:
-
-            console.log("[Page]", _cachedName,
-                        "#" + _cachedInstance,
-                        "Suspended")
-
-            root.onSuspend()
-            break
-
-        case AppState.Destroyed:
+            console.log("[Page]",_cachedName,"#"+_cachedInstance,"Suspended")
+            pageSuspend()
             break
         }
-
-        lastState = state
     }
 
     //==============================
@@ -154,19 +133,17 @@ Item {
     // 页面创建
     //==============================
     Component.onCompleted:{
-        if (AppContext) {
-            _cachedName = AppContext.appName
-            _cachedInstance = AppContext.instanceId
+        if(AppContext)
+        {
+            _cachedName=AppContext.appName
+            _cachedInstance=AppContext.instanceId
         }
 
-        console.log("[Page]",
-                    _cachedName,
-                    "#" + _cachedInstance,
-                    "Create")
+        console.log("[Page]",_cachedName,"#"+_cachedInstance,"Create")
 
-        root.onCreate()
+        pageCreate()
 
-        if (AppContext)
+        if(AppContext)
             syncState(AppContext.state)
     }
 
@@ -174,13 +151,8 @@ Item {
     // 页面销毁
     //==========================
     Component.onDestruction:{
-
-        console.log("[Page]",
-                    _cachedName,
-                    "#" + _cachedInstance,
-                    "Destroy")
-
-        root.onDestroy()
+        console.log("[Page]",_cachedName,"#"+_cachedInstance,"Destroy")
+        pageDestroy()
     }
 
     //==============================

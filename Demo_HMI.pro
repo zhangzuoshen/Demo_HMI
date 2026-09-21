@@ -13,7 +13,8 @@ HEADERS += \
     Log.h \
     PageManager.h \
     PageView.h \
-    SceneContainer.h
+    SceneContainer.h \
+    WindowState.h
 
 SOURCES += \
         AppContext.cpp \

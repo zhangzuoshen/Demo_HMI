@@ -9,12 +9,12 @@ BasePage {
     //==============================
     // 生命周期
     //==============================
-    function onCreate(){console.log("[Home] Create")}
-    function onReady(){console.log("[Home] Ready")}
-    function onEnter(){console.log("[Home] Enter")}
-    function onPause(){console.log("[Home] Pause")}
-    function onResume(){console.log("[Home] Resume")}
-    function onDestroy(){console.log("[Home] Destroy")}
+    onPageCreate: {console.log("[Home] Create")}
+    onPageReady: {console.log("[Home] Ready")}
+    onPageEnter: {console.log("[Home] Enter")}
+    onPagePause: {console.log("[Home] Pause")}
+    onPageResume: {console.log("[Home] Resume")}
+    onPageDestroy: {console.log("[Home] Destroy")}
 
     //==============================
     // 页面内容

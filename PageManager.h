@@ -31,7 +31,7 @@ public:
     Q_ENUM(LaunchReason)
 
     explicit PageManager(AppRegistry *registry,
-                         QObject *parent=nullptr);
+                         QObject *parent = nullptr);
 
     QString currentAppId() const;
     quint64 currentInstanceId() const;
@@ -39,25 +39,39 @@ public:
     AppInstance currentApp() const;
     const QVector<AppInstance> &stack() const;
 
-    Q_INVOKABLE void launchApp(
-            const QString &appId,
-            LaunchReason reason=User);
+    Q_INVOKABLE void launchApp(const QString &appId,
+                               LaunchReason reason = User);
 
     Q_INVOKABLE void back();
 
+    // 首次创建完成（只触发一次）
     void pageReady(quint64 instanceId);
+
+    // SceneContainer Attach 完成后调用
+    void pageAttached(quint64 instanceId);
 
 signals:
 
+    // QML Loader 切换
     void currentChanged();
 
-    // 生命周期
-    void instanceCreated(quint64 instanceId, QString appId);
-    void instanceDestroyed(quint64 instanceId, QString appId);
+    // App 生命周期（QML BasePage 使用）
+    void appEntered(quint64 instanceId);
+    void appPaused(quint64 instanceId);
+    void appResumed(quint64 instanceId);
+    void appExited(quint64 instanceId);
+    void appReady(quint64 instanceId);
 
+    // Instance 生命周期
+    void instanceCreated(quint64 instanceId,
+                         QString appId);
+
+    void instanceDestroyed(quint64 instanceId,
+                           QString appId);
+
+    // Scene 生命周期（SceneContainer 使用）
     void sceneCreated(AppInstance instance);
     void sceneAttached(quint64 instanceId);
-    // 新增
     void sceneDetached(quint64 instanceId);
     void sceneDestroyed(quint64 instanceId);
 
@@ -65,8 +79,13 @@ private:
 
     AppInstance createInstance(const AppInfo &info);
 
-    void changeState(AppInstance &instance,
-                     AppState::State state);
+    // 只修改状态，不发送生命周期
+    void setState(AppInstance &instance,
+                  AppState::State state);
+
+    // 根据状态发送生命周期事件
+    void dispatchLifecycle(AppInstance &instance,
+                           AppState::State state);
 
     AppInstance *findInstance(quint64 instanceId);
     const AppInstance *findInstance(quint64 instanceId) const;
@@ -75,14 +94,15 @@ private:
 
 private:
 
-    AppRegistry *m_registry=nullptr;
+    AppRegistry *m_registry = nullptr;
 
+    // 前台任务栈
     QVector<AppInstance> m_stack;
 
-    // 新增：后台保活实例
+    // keepAlive 后台缓存
     QHash<QString, AppInstance> m_backgroundApps;
 
-    quint64 m_nextInstanceId=1;
+    quint64 m_nextInstanceId = 1;
 };
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef SCENECONTAINER_H
 #define SCENECONTAINER_H
 
-#include <QMap>
+#include <QHash>
 #include <QQuickItem>
 
 #include "AppInstance.h"
@@ -13,7 +13,7 @@ class SceneContainer : public QQuickItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QObject *pageManager
+    Q_PROPERTY(QObject* pageManager
                READ pageManager
                WRITE setPageManager
                NOTIFY pageManagerChanged)
@@ -27,14 +27,11 @@ public:
     void setPageManager(QObject *mgr);
 
 signals:
-
     void pageManagerChanged();
 
 protected:
-
-    void geometryChanged(
-            const QRectF &newGeometry,
-            const QRectF &oldGeometry) override;
+    void geometryChanged(const QRectF &newGeometry,
+                         const QRectF &oldGeometry) override;
 
 private slots:
 
@@ -52,9 +49,9 @@ private:
 
     QObject *m_pageManager=nullptr;
 
-    PageView *m_frontView=nullptr;
+    QHash<quint64,PageView*> m_cachedViews;
 
-    QMap<quint64,PageView*> m_cachedViews;
+    PageView *m_frontView=nullptr;
 };
 
 #endif

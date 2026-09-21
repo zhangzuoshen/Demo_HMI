@@ -6,6 +6,7 @@
 #include "Log.h"
 #include "PageManager.h"
 #include "SceneContainer.h"
+#include "WindowState.h"
 
 bool ApplicationBootstrap::initialize(
         QQmlApplicationEngine &engine,
@@ -18,11 +19,19 @@ bool ApplicationBootstrap::initialize(
     // 注册 QML 类型
     //==============================
     qmlRegisterUncreatableMetaObject(
-        AppState::staticMetaObject,
-        "HMI.Core",      // QML模块
-        1, 0,
-        "AppState",      // QML类型名
-        "AppState is an enum only");
+                WindowState::staticMetaObject,
+                "HMI.Core",     // QML模块
+                1, 0,
+                "WindowState",  // QML类型名
+                "WindowState is an enum only");
+
+    qmlRegisterUncreatableMetaObject(
+                AppState::staticMetaObject,
+                "HMI.Core",      // QML模块
+                1, 0,
+                "AppState",      // QML类型名
+                "AppState is an enum only");
+
 
     qmlRegisterType<SceneContainer>(
                 "HMI.Core",

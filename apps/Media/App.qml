@@ -7,12 +7,12 @@ BasePage {
     //==============================
     // 生命周期
     //==============================
-    function onCreate(){console.log("[Media] Create")}
-    function onReady(){console.log("[Media] Ready")}
-    function onEnter(){console.log("[Media] Enter")}
-    function onPause(){console.log("[Media] Pause")}
-    function onResume(){console.log("[Media] Resume")}
-    function onDestroy(){console.log("[Media] Destroy")}
+    onPageCreate: {console.log("[Media] Create")}
+    onPageReady: {console.log("[Media] Ready")}
+    onPageEnter: {console.log("[Media] Enter")}
+    onPagePause: {console.log("[Media] Pause")}
+    onPageResume: {console.log("[Media] Resume")}
+    onPageDestroy: {console.log("[Media] Destroy")}
 
     Column {
         anchors.centerIn: parent

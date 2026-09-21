@@ -7,12 +7,12 @@ BasePage {
     //==============================
     // 生命周期
     //==============================
-    function onCreate(){console.log("[Settings] Create")}
-    function onReady(){console.log("[Settings] Ready")}
-    function onEnter(){console.log("[Settings] Enter")}
-    function onPause(){console.log("[Settings] Pause")}
-    function onResume(){console.log("[Settings] Resume")}
-    function onDestroy(){console.log("[Settings] Destroy")}
+    onPageCreate: {console.log("[Settings] Create")}
+    onPageReady: {console.log("[Settings] Ready")}
+    onPageEnter: {console.log("[Settings] Enter")}
+    onPagePause: {console.log("[Settings] Pause")}
+    onPageResume: {console.log("[Settings] Resume")}
+    onPageDestroy: {console.log("[Settings] Destroy")}
 
     Column {
         anchors.centerIn: parent

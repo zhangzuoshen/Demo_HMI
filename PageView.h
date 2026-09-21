@@ -7,6 +7,7 @@
 #include <QQuickItem>
 
 #include "AppInstance.h"
+#include "WindowState.h"
 
 class QQmlEngine;
 
@@ -14,11 +15,18 @@ class PageView : public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(WindowState::State windowState
+               READ windowState
+               NOTIFY windowStateChanged)
+
 public:
     explicit PageView(QQmlEngine *engine,
                       QObject *parent = nullptr);
 
     ~PageView();
+
+    WindowState::State windowState() const;
+    void setWindowState(WindowState::State s);
 
     bool create(const AppInstance &instance);
 
@@ -36,7 +44,14 @@ public:
 
     const AppInstance &instance() const;
 
+signals:
+
+    void windowStateChanged();
+
 private:
+
+    WindowState::State m_windowState =
+            WindowState::Detached;
 
     QQmlEngine *m_engine = nullptr;
 
