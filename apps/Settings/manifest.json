@@ -1,0 +1,19 @@
+{
+    "appId": "settings",
+    "name": "Settings",
+    "entry": "App.qml",
+    "icon": "icon.png",
+    "version": "1.0.0",
+
+    "priority": 30,
+    "launchMode": "standard",
+
+    "preload": false,
+    "background": true,
+    "keepAlive": true,
+
+    "permissions": [
+      "audio",
+      "storage"
+    ]
+}

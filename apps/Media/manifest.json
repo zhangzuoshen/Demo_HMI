@@ -1,0 +1,19 @@
+{
+  "appId": "media",
+  "name": "Media",
+  "entry": "App.qml",
+  "icon": "icon.png",
+  "version": "1.0.0",
+
+  "priority": 50,
+  "launchMode": "singleTask",
+
+  "preload": false,
+  "background": true,
+  "keepAlive": true,
+
+  "permissions": [
+    "audio",
+    "storage"
+  ]
+}

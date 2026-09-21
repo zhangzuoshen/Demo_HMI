@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/apps">
+        <file>main.qml</file>
+        <file>Home/App.qml</file>
+        <file>Media/App.qml</file>
+        <file>Settings/App.qml</file>
+        <file>Home/manifest.json</file>
+        <file>Media/manifest.json</file>
+        <file>Settings/manifest.json</file>
+        <file>components/BasePage.qml</file>
+        <file>components/AppButton.qml</file>
+        <file>components/TitleBar.qml</file>
+    </qresource>
+</RCC>
