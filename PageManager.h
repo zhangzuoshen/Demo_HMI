@@ -6,6 +6,7 @@
 
 #include "AppRegistry.h"
 #include "AppInstance.h"
+#include "AppState.h"
 
 class PageManager : public QObject
 {
@@ -13,7 +14,11 @@ class PageManager : public QObject
 
     Q_PROPERTY(QString currentAppId
                READ currentAppId
-               NOTIFY currentAppChanged)
+               NOTIFY currentChanged)
+
+    Q_PROPERTY(quint64 currentInstanceId
+               READ currentInstanceId
+               NOTIFY currentChanged)
 
 public:
 
@@ -25,9 +30,11 @@ public:
     Q_ENUM(LaunchReason)
 
     explicit PageManager(AppRegistry *registry,
-                         QObject *parent = nullptr);
+                         QObject *parent=nullptr);
 
     QString currentAppId() const;
+
+    quint64 currentInstanceId() const;
 
     AppInstance currentApp() const;
 
@@ -35,38 +42,51 @@ public:
 
     Q_INVOKABLE void launchApp(
             const QString &appId,
-            LaunchReason reason = User);
+            LaunchReason reason=User);
 
     Q_INVOKABLE void back();
 
     void pageReady(quint64 instanceId);
 
 signals:
-    void currentAppChanged();
 
-    void appCreated(quint64 instanceId, QString appId);
-    void appReady(quint64 instanceId, QString appId);
-    void appEntered(quint64 instanceId, QString appId);
-    void appPaused(quint64 instanceId, QString appId);
-    void appResumed(quint64 instanceId, QString appId);
-    void appExited(quint64 instanceId, QString appId);
-    void appDestroyed(quint64 instanceId, QString appId);
-    void appNewIntent(quint64 instanceId, QString appId);
+    // SceneContainer监听
+    void currentChanged();
 
-private:
-    AppInstance createInstance(const AppInfo &info);
+    // 生命周期状态变化
+    void instanceCreated(
+            quint64 instanceId,
+            QString appId);
 
-    void enter(AppInstance &instance);
-    void pause(AppInstance &instance);
-    void resume(AppInstance &instance);
-    void exit(AppInstance &instance);
-    void destroy(AppInstance &instance);
+    void instanceDestroyed(
+            quint64 instanceId,
+            QString appId);
+
+    void instanceStateChanged(
+            quint64 instanceId,
+            int state);
 
 private:
-    AppRegistry *m_registry;
+
+    AppInstance createInstance(
+            const AppInfo &info);
+
+    void changeState(
+            AppInstance &instance,
+            AppState::State state);
+
+    int findTask(
+            const QString &appId) const;
+
+private:
+
+    AppRegistry *m_registry=nullptr;
+
     QVector<AppInstance> m_stack;
-    quint64 m_nextInstanceId = 1;
-    quint64 m_pendingReadyId = 0;
+
+    quint64 m_nextInstanceId=1;
+
+    quint64 m_pendingReadyId=0;
 };
 
 #endif

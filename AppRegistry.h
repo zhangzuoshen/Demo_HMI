@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QMap>
-#include <QStringList>
+#include <QString>
 
 struct AppInfo
 {
@@ -17,10 +17,11 @@ struct AppInfo
     QString appId;
     QString name;
     QString entry;
-    QString basePath;
     QString icon;
+    QString basePath;
 
     int priority = 0;
+
     LaunchMode launchMode = Standard;
 };
 
@@ -29,23 +30,27 @@ class AppRegistry : public QObject
     Q_OBJECT
 
 public:
+
     explicit AppRegistry(QObject *parent = nullptr);
 
-    bool loadApps(const QString &rootPath);
+    bool loadApps(const QString &resourceRoot);
 
     bool contains(const QString &appId) const;
 
     AppInfo app(const QString &appId) const;
 
-    QStringList appIds() const;
-
     QList<AppInfo> apps() const;
 
 private:
+
     bool loadManifest(const QString &appDir);
 
+    AppInfo::LaunchMode parseLaunchMode(
+            const QString &mode) const;
+
 private:
-    QMap<QString, AppInfo> m_apps;
+
+    QMap<QString,AppInfo> m_apps;
 };
 
 #endif

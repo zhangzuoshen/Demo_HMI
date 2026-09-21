@@ -8,6 +8,8 @@ HEADERS += \
     AppContext.h \
     AppInstance.h \
     AppRegistry.h \
+    AppState.h \
+    ApplicationBootstrap.h \
     Log.h \
     PageManager.h \
     SceneContainer.h
@@ -16,6 +18,7 @@ SOURCES += \
         AppContext.cpp \
         AppInstance.cpp \
         AppRegistry.cpp \
+        ApplicationBootstrap.cpp \
         Log.cpp \
         PageManager.cpp \
         SceneContainer.cpp \

@@ -6,7 +6,7 @@
 #include "Log.h"
 #include "AppRegistry.h"
 #include "PageManager.h"
-#include "SceneContainer.h"
+#include "ApplicationBootstrap.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,9 +15,8 @@ int main(int argc, char *argv[])
     //==============================
     QGuiApplication app(argc, argv);
 
-    QCoreApplication::setApplicationName("DemoHMI");
+    QCoreApplication::setApplicationName("Demo_HMI");
     QCoreApplication::setApplicationVersion("1.0.0");
-    QCoreApplication::setOrganizationName("Demo");
 
     //==============================
     // OpenGL（EGFS 推荐）
@@ -33,7 +32,7 @@ int main(int argc, char *argv[])
     //==============================
     initLogSystem();
 
-    qCInfo(logPageManager)
+    qCInfo(logMain)
             << "Application started";
 
     //==============================
@@ -43,7 +42,7 @@ int main(int argc, char *argv[])
 
     if(!registry.loadApps(":/apps"))
     {
-        qCCritical(logPageManager)
+        qCCritical(logMain)
                 << "No application found.";
 
         return -1;
@@ -55,29 +54,17 @@ int main(int argc, char *argv[])
     PageManager pageManager(&registry);
 
     //==============================
-    // 注册 QML 类型
-    //==============================
-    qmlRegisterType<SceneContainer>(
-                "HMI.Scene",
-                1,
-                0,
-                "SceneContainer");
-
-    //==============================
     // QML Engine
     //==============================
     QQmlApplicationEngine engine;
 
-    engine.rootContext()->setContextProperty(
-                "PageManager",
-                &pageManager);
-
-    engine.load(QUrl("qrc:/apps/main.qml"));
-
-    if(engine.rootObjects().isEmpty())
+    if(!ApplicationBootstrap::initialize(
+                engine,
+                registry,
+                pageManager))
     {
-        qCCritical(logPageManager)
-                << "Failed to load main.qml";
+        qCCritical(logMain)
+                << "Failed to load Main.qml";
 
         return -1;
     }
@@ -89,7 +76,7 @@ int main(int argc, char *argv[])
     //==============================
     pageManager.launchApp("home");
 
-    qCInfo(logPageManager)
+    qCInfo(logMain)
             << "HMI initialized successfully.";
 
     return app.exec();

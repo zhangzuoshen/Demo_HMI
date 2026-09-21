@@ -1,41 +1,12 @@
 #include "SceneContainer.h"
 
-#include <QDebug>
+#include <QQmlEngine>
 
 #include "PageManager.h"
 #include "Log.h"
 
-class SceneContainer::SceneIncubator
-        : public QQmlIncubator
-{
-public:
-    explicit SceneIncubator(SceneContainer *owner)
-        : QQmlIncubator(Asynchronous),
-          m_owner(owner)
-    {
-    }
-
-protected:
-    void statusChanged(Status status) override
-    {
-        switch(status)
-        {
-        case Ready:
-            m_owner->finishCreate(object());
-            break;
-        case Error:
-            m_owner->createError();
-            break;
-        default:
-            break;
-        }
-    }
-
-private:
-    SceneContainer *m_owner;
-};
-
-SceneContainer::SceneContainer(QQuickItem *parent)
+SceneContainer::SceneContainer(
+        QQuickItem *parent)
     : QQuickItem(parent)
 {
 }
@@ -50,111 +21,157 @@ QObject* SceneContainer::pageManager() const
     return m_pageManager;
 }
 
-void SceneContainer::setPageManager(QObject *mgr)
+void SceneContainer::setPageManager(
+        QObject *mgr)
 {
     if(m_pageManager==mgr)
         return;
 
     if(m_pageManager)
     {
-        disconnect(m_pageManager, nullptr, this, nullptr);
+        disconnect(m_pageManager,
+                   nullptr,
+                   this,
+                   nullptr);
     }
 
     m_pageManager=mgr;
 
-    if(m_pageManager) {
-        connect(m_pageManager, SIGNAL(currentAppChanged()),
-                this, SLOT(onCurrentAppChanged()));
+    if(m_pageManager)
+    {
+        connect(
+            mgr,
+            SIGNAL(instanceStateChanged(quint64,int)),
+            this,
+            SLOT(onStateChanged(quint64,int)));
 
-        onCurrentAppChanged();
+        connect(
+            m_pageManager,
+            SIGNAL(currentChanged()),
+            this,
+            SLOT(onCurrentChanged()));
+
+        onCurrentChanged();
     }
 
     emit pageManagerChanged();
 }
 
-void SceneContainer::onCurrentAppChanged()
+void SceneContainer::onStateChanged(
+        quint64 id,
+        int state)
 {
-    auto mgr = qobject_cast<PageManager*>(m_pageManager);
-
-    if(!mgr) {
+    if(id!=m_currentInstance.instanceId)
         return;
-    }
+
+    if(!m_appContext)
+        return;
+
+    m_appContext->setState(
+                static_cast<AppState::State>(state));
+}
+
+void SceneContainer::onCurrentChanged()
+{
+    auto mgr=
+            qobject_cast<PageManager*>(
+                m_pageManager);
+
+    if(!mgr)
+        return;
+
+    AppInstance instance=mgr->currentApp();
+
+    if(instance.instanceId==0)
+        return;
 
     load(mgr->currentApp());
 }
 
-void SceneContainer::load(const AppInstance &instance)
+void SceneContainer::load(
+        const AppInstance &instance)
 {
     unload();
-    m_currentInstance = instance;
-    m_engine = qmlEngine(this);
+
+    m_currentInstance=instance;
+
+    m_engine=qmlEngine(this);
 
     if(!m_engine)
-    {
-        qCWarning(logSceneContainer)
-                << "SceneContainer has no QQmlEngine";
         return;
-    }
 
-    qCInfo(logSceneContainer)
-            << "Scene load:"
+    qCInfo(logScene)
+            << "Load:"
             << instance.info.appId
-            << "#" << instance.instanceId;
+            << "#"
+            << instance.instanceId;
 
-    m_context = new QQmlContext(m_engine->rootContext(), this);
-    m_appContext = new AppContext(instance, m_context);
+    // 创建 Context：
+    m_context=
+            new QQmlContext(
+                m_engine->rootContext(),
+                this);
+
+    m_appContext=
+            new AppContext(
+                instance,
+                m_context);
 
     m_context->setContextProperty(
                 "AppContext",
                 m_appContext);
 
-    QString path = instance.info.basePath;
+    // 创建组件：
+    QString path=
+            instance.info.basePath;
+
     path.replace(":/","qrc:/");
 
-    m_component = new QQmlComponent(m_engine,
-                                    QUrl(path+"/"+instance.info.entry),
-                                    this);
+    m_component=
+            new QQmlComponent(
+                m_engine,
+                QUrl(path+"/"+instance.info.entry),
+                this);
 
     if(m_component->isError())
     {
-        qWarning()<<m_component->errors();
+        qWarning()
+                << m_component->errors();
+
         return;
     }
 
-    m_incubator = new SceneIncubator(this);
-    m_component->create(*m_incubator, m_context);
-}
+    // 创建页面：
+    QObject *obj=
+            m_component->create(
+                m_context);
 
-void SceneContainer::finishCreate(QObject *object)
-{
-    m_rootItem = qobject_cast<QQuickItem*>(object);
+    m_rootItem=
+            qobject_cast<QQuickItem*>(obj);
 
     if(!m_rootItem)
     {
-        delete object;
+        delete obj;
         return;
     }
 
     m_rootItem->setParent(this);
+
     m_rootItem->setParentItem(this);
 
     m_rootItem->setWidth(width());
     m_rootItem->setHeight(height());
 
-    auto mgr = qobject_cast<PageManager*>(m_pageManager);
+    // 通知：
+    auto mgr=
+            qobject_cast<PageManager*>(
+                m_pageManager);
 
     if(mgr)
     {
-        mgr->pageReady(m_currentInstance.instanceId);
+        mgr->pageReady(
+                    instance.instanceId);
     }
-}
-
-void SceneContainer::createError()
-{
-    if(!m_component)
-        return;
-
-    qWarning()<<m_component->errors();
 }
 
 void SceneContainer::unload()
@@ -162,26 +179,28 @@ void SceneContainer::unload()
     if(m_rootItem)
     {
         m_rootItem->deleteLater();
+
         m_rootItem=nullptr;
     }
-
-    delete m_incubator;
-    m_incubator=nullptr;
 
     if(m_component)
     {
         m_component->deleteLater();
+
         m_component=nullptr;
     }
 
     if(m_context)
     {
         m_context->deleteLater();
+
         m_context=nullptr;
+
         m_appContext=nullptr;
     }
 }
 
+// 自动适配分辨率
 void SceneContainer::geometryChanged(
         const QRectF &newGeometry,
         const QRectF &oldGeometry)
@@ -192,7 +211,10 @@ void SceneContainer::geometryChanged(
 
     if(m_rootItem)
     {
-        m_rootItem->setWidth(newGeometry.width());
-        m_rootItem->setHeight(newGeometry.height());
+        m_rootItem->setWidth(
+                    newGeometry.width());
+
+        m_rootItem->setHeight(
+                    newGeometry.height());
     }
 }

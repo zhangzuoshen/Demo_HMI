@@ -1,150 +1,148 @@
 #include "AppRegistry.h"
-#include "Log.h"
 
 #include <QDir>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <algorithm>
+
+#include "Log.h"
 
 AppRegistry::AppRegistry(QObject *parent)
     : QObject(parent)
 {
 }
 
-bool AppRegistry::loadApps(const QString &rootPath)
+bool AppRegistry::loadApps(const QString &resourceRoot)
 {
-    qCInfo(logAppRegistry) << "Scan resource path:" << rootPath;
+    qCInfo(logRegistry)
+            << "Scan resource path:"
+            << resourceRoot;
 
-    QDir root(rootPath);
+    m_apps.clear();
 
-    int count = 0;
+    QDir root(resourceRoot);
 
-    const auto dirs = root.entryInfoList(
-                QDir::Dirs | QDir::NoDotAndDotDot);
+    QFileInfoList dirs =
+            root.entryInfoList(
+                QDir::Dirs |
+                QDir::NoDotAndDotDot);
 
-    for(const QFileInfo &dirInfo : dirs)
+    foreach(const QFileInfo &dir, dirs)
     {
-        QString manifest = dirInfo.absoluteFilePath() + "/manifest.json";
+        QString manifest =
+                dir.absoluteFilePath()
+                + "/manifest.json";
 
         if(!QFile::exists(manifest))
         {
-            qCDebug(logAppRegistry)
+            qCDebug(logRegistry)
                     << "Skip (no manifest):"
-                    << dirInfo.fileName();
+                    << dir.fileName();
+
             continue;
         }
 
-        if(loadManifest(dirInfo.absoluteFilePath()))
-            count++;
+        loadManifest(dir.absoluteFilePath());
     }
 
-    qCInfo(logAppRegistry) << "Total apps:" << count;
+    qCInfo(logRegistry)
+            << "Total apps:"
+            << m_apps.size();
 
-    return count > 0;
+    return !m_apps.isEmpty();
 }
 
 bool AppRegistry::loadManifest(const QString &appDir)
 {
-    QString manifestPath =
-            appDir + "/manifest.json";
-
-    QFile file(manifestPath);
+    QFile file(appDir + "/manifest.json");
 
     if(!file.open(QIODevice::ReadOnly))
     {
-        qCWarning(logAppRegistry)
+        qCWarning(logRegistry)
                 << "Cannot open:"
-                << manifestPath;
+                << file.fileName();
+
         return false;
     }
 
-    auto doc =
+    QJsonDocument doc =
             QJsonDocument::fromJson(file.readAll());
 
-    if(doc.isNull())
+    if(!doc.isObject())
     {
-        qCCritical(logAppRegistry)
-                << "Invalid json:"
-                << manifestPath;
+        qCWarning(logRegistry)
+                << "Invalid manifest:"
+                << file.fileName();
+
         return false;
     }
 
-    auto obj = doc.object();
+    QJsonObject obj = doc.object();
 
     AppInfo info;
 
-    info.appId = obj.value("appId").toString();
-    info.name = obj.value("name").toString();
-    info.entry = obj.value("entry").toString();
-    info.icon = obj.value("icon").toString();
-    info.priority = obj.value("priority").toInt(0);
+    info.appId = obj["appId"].toString();
+    info.name = obj["name"].toString();
+    info.entry = obj["entry"].toString("App.qml");
+    info.icon = obj["icon"].toString();
+
+    info.priority =
+            obj["priority"].toInt(0);
+
+    info.launchMode =
+            parseLaunchMode(
+                obj["launchMode"]
+                .toString("standard"));
+
     info.basePath = appDir;
-
-    QString mode =
-            obj.value("launchMode")
-            .toString("standard");
-
-    if(mode == "singleTask")
-        info.launchMode = AppInfo::SingleTask;
-    else if(mode == "singleTop")
-        info.launchMode = AppInfo::SingleTop;
-    else
-        info.launchMode = AppInfo::Standard;
 
     if(info.appId.isEmpty())
     {
-        qCCritical(logAppRegistry)
+        qCWarning(logRegistry)
                 << "Missing appId:"
-                << manifestPath;
+                << appDir;
+
         return false;
     }
 
-    if(m_apps.contains(info.appId))
-    {
-        qCWarning(logAppRegistry)
-                << "Duplicate appId:"
-                << info.appId;
-        return false;
-    }
+    m_apps.insert(info.appId,info);
 
-    m_apps.insert(info.appId, info);
-
-    qCInfo(logAppRegistry)
+    qCInfo(logRegistry)
             << "Register"
             << info.appId
-            << "priority:" << info.priority
-            << "launchMode:" << mode;
+            << "priority:"
+            << info.priority
+            << "launchMode:"
+            << obj["launchMode"].toString();
 
     return true;
 }
 
-bool AppRegistry::contains(const QString &appId) const
+AppInfo::LaunchMode AppRegistry::parseLaunchMode(
+        const QString &mode) const
+{
+    if(mode=="singleTop")
+        return AppInfo::SingleTop;
+
+    if(mode=="singleTask")
+        return AppInfo::SingleTask;
+
+    return AppInfo::Standard;
+}
+
+bool AppRegistry::contains(
+        const QString &appId) const
 {
     return m_apps.contains(appId);
 }
 
-AppInfo AppRegistry::app(const QString &appId) const
+AppInfo AppRegistry::app(
+        const QString &appId) const
 {
     return m_apps.value(appId);
 }
 
-QStringList AppRegistry::appIds() const
-{
-    return m_apps.keys();
-}
-
 QList<AppInfo> AppRegistry::apps() const
 {
-    auto list = m_apps.values();
-
-    std::sort(list.begin(),
-              list.end(),
-              [](const AppInfo &a,
-                 const AppInfo &b)
-              {
-                  return a.priority > b.priority;
-              });
-
-    return list;
+    return m_apps.values();
 }

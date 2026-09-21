@@ -1,6 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
-import HMI.Scene 1.0
+import HMI.Core 1.0
 
 Window {
     id: root
@@ -22,11 +22,29 @@ Window {
     //==============================
     // App Scene
     //==============================
-    SceneContainer {
-        id: appScene
+    Item {
         anchors.fill: parent
-        pageManager: PageManager
-        z: 0
+        focus: true
+        //==============================
+        // 全局返回键
+        //==============================
+        Keys.onReleased: {
+            switch(event.key)
+            {
+            case Qt.Key_Back:
+            case Qt.Key_Escape:
+                PageManager.back()
+                event.accepted = true
+                break
+            }
+        }
+
+        SceneContainer {
+            id: appScene
+            anchors.fill: parent
+            pageManager: PageManager
+            z: 0
+        }
     }
 
     //==============================
@@ -77,21 +95,6 @@ Window {
             }
         }
     }
-
-    //==============================
-    // 全局返回键
-    //==============================
-    Keys.onReleased: {
-        switch(event.key)
-        {
-        case Qt.Key_Back:
-        case Qt.Key_Escape:
-            PageManager.back()
-            event.accepted = true
-            break
-        }
-    }
-
 
     //==============================
     // 启动日志

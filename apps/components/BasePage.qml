@@ -1,5 +1,7 @@
 import QtQuick 2.12
 
+import HMI.Core 1.0
+
 Item {
     id: root
 
@@ -14,6 +16,8 @@ Item {
 
     // 内容区域
     default property alias content: contentArea.data
+
+    property int lastState:AppState.None
 
     //==============================
     // 生命周期（供子页面重写）
@@ -42,20 +46,15 @@ Item {
         id: titleBar
 
         visible: root.showTitleBar
-
         anchors.top: parent.top
         width: parent.width
         height: root.titleBarHeight
-
         color: "#303030"
 
         Text {
             anchors.centerIn: parent
-
             text: AppContext.appName
-
             color: "white"
-
             font.pixelSize: 24
             font.bold: true
         }
@@ -84,10 +83,9 @@ Item {
                     "[Page]",
                     AppContext.appName,
                     "#" + AppContext.instanceId,
-                    "Ready")
+                    "Create")
 
         root.onCreate()
-        root.onReady()
     }
 
     Component.onDestruction: {
@@ -105,84 +103,24 @@ Item {
     // 生命周期监听
     //==============================
     Connections {
-
-        target: PageManager
-
-        onAppEntered: {
-
-            if(instanceId === AppContext.instanceId)
-            {
-                console.log(
-                            "[Page]",
-                            AppContext.appName,
-                            "#" + AppContext.instanceId,
-                            "Enter")
-
-                root.onEnter()
-            }
-
-        }
-
-        onAppPaused: {
-
-            if(instanceId === AppContext.instanceId)
-            {
-                console.log(
-                            "[Page]",
-                            AppContext.appName,
-                            "#" + AppContext.instanceId,
-                            "Pause")
-
+        target: AppContext
+        onStateChanged:{
+            switch(AppContext.state){
+            case AppState.Ready:
+                root.onReady()
+                break
+            case AppState.Foreground:
+                if(lastState===AppState.Background)
+                    root.onResume()
+                else
+                    root.onEnter()
+                break
+            case AppState.Background:
                 root.onPause()
+                break
             }
-
+            lastState=AppContext.state
         }
-
-        onAppResumed: {
-
-            if(instanceId === AppContext.instanceId)
-            {
-                console.log(
-                            "[Page]",
-                            AppContext.appName,
-                            "#" + AppContext.instanceId,
-                            "Resume")
-
-                root.onResume()
-            }
-
-        }
-
-        onAppExited: {
-
-            if(instanceId === AppContext.instanceId)
-            {
-                console.log(
-                            "[Page]",
-                            AppContext.appName,
-                            "#" + AppContext.instanceId,
-                            "Exit")
-
-                root.onExit()
-            }
-
-        }
-
-        onAppNewIntent: {
-
-            if(instanceId === AppContext.instanceId)
-            {
-                console.log(
-                            "[Page]",
-                            AppContext.appName,
-                            "#" + AppContext.instanceId,
-                            "NewIntent")
-
-                root.onNewIntent()
-            }
-
-        }
-
     }
 
 }

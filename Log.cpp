@@ -4,46 +4,30 @@
 #include <QDebug>
 
 // 分类定义
-Q_LOGGING_CATEGORY(logAppRegistry, "HMI.AppRegistry")
-Q_LOGGING_CATEGORY(logPageManager, "HMI.PageManager")
-Q_LOGGING_CATEGORY(logSceneContainer, "HMI.SceneContainer")
-Q_LOGGING_CATEGORY(logQml, "HMI.QML")
+Q_LOGGING_CATEGORY(logMain,"MAIN")
+Q_LOGGING_CATEGORY(logBootstrap,"Bootstrap")
+Q_LOGGING_CATEGORY(logPageManager,"PageManager")
+Q_LOGGING_CATEGORY(logScene,"Scene")
+Q_LOGGING_CATEGORY(logRegistry,"AppRegistry")
+Q_LOGGING_CATEGORY(logQml,"QML")
 
 static void messageHandler(QtMsgType type,
-                           const QMessageLogContext &context,
+                           const QMessageLogContext &ctx,
                            const QString &msg)
 {
-    Q_UNUSED(context)
-
     QString level;
 
-    switch (type)
+
+    switch(type)
     {
-    case QtDebugMsg:
-        level = "DEBUG";
-        break;
-
-    case QtInfoMsg:
-        level = "INFO ";
-        break;
-
-    case QtWarningMsg:
-        level = "WARN ";
-        break;
-
-    case QtCriticalMsg:
-        level = "ERROR";
-        break;
-
-    case QtFatalMsg:
-        level = "FATAL";
-        break;
+    case QtDebugMsg:    level="DEBUG"; break;
+    case QtInfoMsg:     level="INFO "; break;
+    case QtWarningMsg:  level="WARN "; break;
+    case QtCriticalMsg: level="ERROR"; break;
+    case QtFatalMsg:    level="FATAL"; break;
     }
 
-    QString category = context.category;
-
-//    if (category.startsWith("HMI."))
-//        category.remove(0,4);
+    QString category = ctx.category;
 
     QString time =
         QDateTime::currentDateTime()
