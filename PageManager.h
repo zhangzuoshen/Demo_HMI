@@ -44,30 +44,27 @@ public:
 
     Q_INVOKABLE void back();
 
-    // SceneContainer 在页面创建完成后调用
     void pageReady(quint64 instanceId);
 
 signals:
 
-    // SceneContainer 监听
     void currentChanged();
 
-    void instanceCreated(
-            quint64 instanceId,
-            QString appId);
+    // 生命周期
+    void instanceCreated(quint64 instanceId, QString appId);
+    void instanceDestroyed(quint64 instanceId, QString appId);
 
-    void instanceDestroyed(
-            quint64 instanceId,
-            QString appId);
+    // ===== 新增：Scene事件 =====
+    void sceneCreated(AppInstance instance);
+    void sceneAttached(quint64 instanceId);
+    void sceneDestroyed(quint64 instanceId);
 
 private:
 
-    AppInstance createInstance(
-            const AppInfo &info);
+    AppInstance createInstance(const AppInfo &info);
 
-    void changeState(
-            AppInstance &instance,
-            AppState::State state);
+    void changeState(AppInstance &instance,
+                     AppState::State state);
 
     AppInstance *findInstance(quint64 instanceId);
     const AppInstance *findInstance(quint64 instanceId) const;

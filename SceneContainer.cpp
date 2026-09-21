@@ -14,9 +14,6 @@ SceneContainer::SceneContainer(QQuickItem *parent)
 SceneContainer::~SceneContainer()
 {
     qDeleteAll(m_cachedViews);
-    m_cachedViews.clear();
-
-    m_frontView = nullptr;
 }
 
 QObject *SceneContainer::pageManager() const
@@ -30,20 +27,22 @@ void SceneContainer::setPageManager(QObject *mgr)
         return;
 
     if (m_pageManager)
-    {
-        disconnect(m_pageManager, nullptr, this, nullptr);
-    }
+        disconnect(m_pageManager,nullptr,this,nullptr);
 
     m_pageManager = mgr;
 
-    if (m_pageManager)
-    {
-        connect(m_pageManager,
-                SIGNAL(currentChanged()),
-                this,
-                SLOT(onCurrentChanged()));
+    auto pm = qobject_cast<PageManager*>(mgr);
 
-        onCurrentChanged();
+    if (pm)
+    {
+        connect(pm,&PageManager::sceneCreated,
+                this,&SceneContainer::onSceneCreated);
+
+        connect(pm,&PageManager::sceneAttached,
+                this,&SceneContainer::onSceneAttached);
+
+        connect(pm,&PageManager::sceneDestroyed,
+                this,&SceneContainer::onSceneDestroyed);
     }
 
     emit pageManagerChanged();
@@ -51,12 +50,13 @@ void SceneContainer::setPageManager(QObject *mgr)
 
 PageView *SceneContainer::findView(quint64 instanceId)
 {
-    return m_cachedViews.value(instanceId, nullptr);
+    return m_cachedViews.value(instanceId,nullptr);
 }
 
 PageView *SceneContainer::createView(const AppInstance &instance)
 {
-    PageView *view = new PageView(qmlEngine(this), this);
+    PageView *view =
+            new PageView(qmlEngine(this),this);
 
     if (!view->create(instance))
     {
@@ -64,55 +64,27 @@ PageView *SceneContainer::createView(const AppInstance &instance)
         return nullptr;
     }
 
-    view->resize(QSizeF(width(), height()));
+    view->resize(QSizeF(width(),height()));
 
-    m_cachedViews.insert(instance.instanceId, view);
+    m_cachedViews.insert(instance.instanceId,view);
 
     return view;
 }
 
-void SceneContainer::onCurrentChanged()
+void SceneContainer::onSceneCreated(AppInstance instance)
 {
-    auto mgr = qobject_cast<PageManager *>(m_pageManager);
+    qCInfo(logScene)
+            << "Create:"
+            << instance.info.appId
+            << "#"
+            << instance.instanceId;
 
-    if (!mgr)
+    PageView *view = createView(instance);
+
+    if (!view)
         return;
 
-    AppInstance instance = mgr->currentApp();
-
-    if (instance.instanceId == 0)
-        return;
-
-    PageView *next = findView(instance.instanceId);
-
-    bool firstCreate = false;
-
-    if (!next)
-    {
-        next = createView(instance);
-
-        if (!next)
-            return;
-
-        firstCreate = true;
-
-        qCInfo(logScene)
-                << "Create:"
-                << instance.info.appId
-                << "#"
-                << instance.instanceId;
-    }
-    else
-    {
-        qCInfo(logScene)
-                << "Attach:"
-                << instance.info.appId
-                << "#"
-                << instance.instanceId;
-    }
-
-    // ---------- 切换前台页面 ----------
-    if (m_frontView && m_frontView != next)
+    if (m_frontView)
     {
         const AppInstance &old = m_frontView->instance();
 
@@ -136,37 +108,87 @@ void SceneContainer::onCurrentChanged()
         }
     }
 
-    // ---------- 切换到新的前台 ----------
-    m_frontView = next;
+    m_frontView = view;
 
-    if (!m_frontView->isAttached())
-    {
-        m_frontView->attach(this);
-    }
+    m_frontView->attach(this);
 
-    m_frontView->resize(QSizeF(width(), height()));
+    m_frontView->resize(QSizeF(width(),height()));
 
-    // ---------- 首次创建才通知 Ready ----------
-    if (firstCreate)
+    auto pm=qobject_cast<PageManager*>(m_pageManager);
+
+    if (pm)
     {
         qCInfo(logScene)
                 << "Notify pageReady:"
                 << instance.instanceId;
 
-        mgr->pageReady(instance.instanceId);
+        pm->pageReady(instance.instanceId);
     }
 }
 
-void SceneContainer::geometryChanged(const QRectF &newGeometry,
-                                     const QRectF &oldGeometry)
+void SceneContainer::onSceneAttached(quint64 instanceId)
 {
-    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+    PageView *view = findView(instanceId);
 
-    const QSizeF size = newGeometry.size();
+    if (!view)
+        return;
+
+    qCInfo(logScene)
+            << "Attach:"
+            << view->instance().info.appId
+            << "#"
+            << instanceId;
+
+    if (m_frontView && m_frontView != view)
+    {
+        const AppInstance &old = m_frontView->instance();
+
+        if (old.info.keepAlive)
+            m_frontView->detach();
+        else
+        {
+            m_cachedViews.remove(old.instanceId);
+            delete m_frontView;
+        }
+    }
+
+    m_frontView = view;
+
+    if (!m_frontView->isAttached())
+        m_frontView->attach(this);
+
+    m_frontView->resize(QSizeF(width(),height()));
+}
+
+void SceneContainer::onSceneDestroyed(quint64 instanceId)
+{
+    PageView *view = findView(instanceId);
+
+    if (!view)
+        return;
+
+    qCInfo(logScene)
+            << "Destroy:"
+            << view->instance().info.appId;
+
+    m_cachedViews.remove(instanceId);
+
+    if (m_frontView == view)
+        m_frontView = nullptr;
+
+    delete view;
+}
+
+void SceneContainer::geometryChanged(
+        const QRectF &newGeometry,
+        const QRectF &oldGeometry)
+{
+    QQuickItem::geometryChanged(newGeometry,
+                                oldGeometry);
 
     for (auto view : m_cachedViews)
     {
         if (view)
-            view->resize(size);
+            view->resize(newGeometry.size());
     }
 }

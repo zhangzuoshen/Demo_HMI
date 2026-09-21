@@ -4,15 +4,16 @@
 #include <QMap>
 #include <QQuickItem>
 
+#include "AppInstance.h"
+
 class PageManager;
 class PageView;
-class AppInstance;
 
 class SceneContainer : public QQuickItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QObject* pageManager
+    Q_PROPERTY(QObject *pageManager
                READ pageManager
                WRITE setPageManager
                NOTIFY pageManagerChanged)
@@ -20,11 +21,9 @@ class SceneContainer : public QQuickItem
 public:
 
     explicit SceneContainer(QQuickItem *parent=nullptr);
-
     ~SceneContainer() override;
 
-    QObject* pageManager() const;
-
+    QObject *pageManager() const;
     void setPageManager(QObject *mgr);
 
 signals:
@@ -33,17 +32,19 @@ signals:
 
 protected:
 
-    void geometryChanged(const QRectF &newGeometry,
-                         const QRectF &oldGeometry) override;
+    void geometryChanged(
+            const QRectF &newGeometry,
+            const QRectF &oldGeometry) override;
 
 private slots:
 
-    void onCurrentChanged();
+    void onSceneCreated(AppInstance instance);
+    void onSceneAttached(quint64 instanceId);
+    void onSceneDestroyed(quint64 instanceId);
 
 private:
 
     PageView *findView(quint64 instanceId);
-
     PageView *createView(const AppInstance &instance);
 
 private:

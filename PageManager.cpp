@@ -39,23 +39,17 @@ const QVector<AppInstance> &PageManager::stack() const
     return m_stack;
 }
 
-AppInstance PageManager::createInstance(
-        const AppInfo &info)
+AppInstance PageManager::createInstance(const AppInfo &info)
 {
     AppInstance instance;
 
-    instance.instanceId=m_nextInstanceId++;
+    instance.instanceId = m_nextInstanceId++;
+    instance.info = info;
+    instance.firstLaunch = true;
+    instance.waitingForReady = true;
+    instance.state = AppState::Created;
 
-    instance.info=info;
-
-    instance.firstLaunch=true;
-
-    instance.waitingForReady=true;
-
-    instance.state=AppState::Created;
-
-    instance.context=new AppContext();
-
+    instance.context = new AppContext();
     instance.context->initialize(instance);
 
     return instance;
@@ -138,17 +132,16 @@ void PageManager::launchApp(
 
     case AppInfo::Standard:
     {
-        if(!m_stack.isEmpty())
-            changeState(
-                        m_stack.last(),
-                        AppState::Background);
+        if (!m_stack.isEmpty())
+            changeState(m_stack.last(), AppState::Background);
 
-        m_stack.append(
-                    createInstance(target));
+        m_stack.append(createInstance(target));
 
         emit instanceCreated(
-                    m_stack.last().instanceId,
-                    appId);
+                m_stack.last().instanceId,
+                appId);
+
+        emit sceneCreated(m_stack.last());
 
         emit currentChanged();
 
@@ -176,6 +169,8 @@ void PageManager::launchApp(
         emit instanceCreated(
                     m_stack.last().instanceId,
                     appId);
+
+        emit sceneCreated(m_stack.last());
 
         emit currentChanged();
 
@@ -208,6 +203,8 @@ void PageManager::launchApp(
                         m_stack.last(),
                         AppState::Foreground);
 
+            emit sceneCreated(m_stack.last());
+
             emit currentChanged();
 
             return;
@@ -224,6 +221,8 @@ void PageManager::launchApp(
         emit instanceCreated(
                     m_stack.last().instanceId,
                     appId);
+
+        emit sceneCreated(m_stack.last());
 
         emit currentChanged();
 
@@ -278,25 +277,25 @@ void PageManager::pageReady(
 
 void PageManager::back()
 {
-    if(m_stack.size()<=1)
+    if (m_stack.size() <= 1)
         return;
 
-    AppInstance dead=
-            m_stack.takeLast();
+    AppInstance dead = m_stack.takeLast();
 
-    changeState(
-                dead,
-                AppState::Destroyed);
+    changeState(dead, AppState::Destroyed);
+
+    emit sceneDestroyed(dead.instanceId);
 
     delete dead.context;
 
     emit instanceDestroyed(
-                dead.instanceId,
-                dead.info.appId);
+            dead.instanceId,
+            dead.info.appId);
 
-    changeState(
-                m_stack.last(),
+    changeState(m_stack.last(),
                 AppState::Foreground);
+
+    emit sceneAttached(m_stack.last().instanceId);
 
     emit currentChanged();
 }
