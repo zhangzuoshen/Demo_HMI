@@ -1,5 +1,4 @@
 import QtQuick 2.12
-import QtQuick.Controls 2.12
 import "../components"
 
 BasePage {
@@ -24,7 +23,7 @@ BasePage {
         anchors.centerIn: parent
         spacing: 24
 
-        Text {
+        TextInput {
             text: "Welcome Home"
             color: "white"
             font.pixelSize: 30
@@ -35,10 +34,6 @@ BasePage {
             text: "Instance #" + AppContext.instanceId
             color: "#DDDDDD"
             font.pixelSize: 16
-        }
-
-        Slider {
-
         }
 
         AppButton {

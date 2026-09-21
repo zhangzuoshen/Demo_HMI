@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QVector>
+#include <QHash>
 
 #include "AppRegistry.h"
 #include "AppInstance.h"
@@ -54,9 +55,10 @@ signals:
     void instanceCreated(quint64 instanceId, QString appId);
     void instanceDestroyed(quint64 instanceId, QString appId);
 
-    // ===== 新增：Scene事件 =====
     void sceneCreated(AppInstance instance);
     void sceneAttached(quint64 instanceId);
+    // 新增
+    void sceneDetached(quint64 instanceId);
     void sceneDestroyed(quint64 instanceId);
 
 private:
@@ -76,6 +78,9 @@ private:
     AppRegistry *m_registry=nullptr;
 
     QVector<AppInstance> m_stack;
+
+    // 新增：后台保活实例
+    QHash<QString, AppInstance> m_backgroundApps;
 
     quint64 m_nextInstanceId=1;
 };

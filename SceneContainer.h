@@ -40,6 +40,7 @@ private slots:
 
     void onSceneCreated(AppInstance instance);
     void onSceneAttached(quint64 instanceId);
+    void onSceneDetached(quint64 instanceId);
     void onSceneDestroyed(quint64 instanceId);
 
 private:

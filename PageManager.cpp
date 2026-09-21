@@ -178,45 +178,91 @@ void PageManager::launchApp(
     }
     case AppInfo::SingleTask:
     {
-        int index=
-                findTask(appId);
+        int index = findTask(appId);
 
-        if(index>=0)
+        // ---------- 已存在实例 ----------
+        if (index >= 0)
         {
-            while(m_stack.size()-1>index)
+            while (m_stack.size() - 1 > index)
             {
-                AppInstance dead=
-                        m_stack.takeLast();
+                AppInstance dead = m_stack.takeLast();
 
-                changeState(
-                            dead,
-                            AppState::Destroyed);
+                if (dead.info.keepAlive)
+                {
+                    qCInfo(logPageManager)
+                            << "[" << dead.instanceId << "]"
+                            << dead.info.appId
+                            << "Move to Background Cache";
 
-                delete dead.context;
+                    changeState(dead, AppState::Background);
 
-                emit instanceDestroyed(
-                            dead.instanceId,
-                            dead.info.appId);
+                    m_backgroundApps.insert(dead.info.appId, dead);
+
+                    emit sceneDetached(dead.instanceId);
+                }
+                else
+                {
+                    qCInfo(logPageManager)
+                            << "[" << dead.instanceId << "]"
+                            << dead.info.appId
+                            << "Destroyed";
+
+                    changeState(dead, AppState::Destroyed);
+
+                    emit sceneDestroyed(dead.instanceId);
+
+                    delete dead.context;
+
+                    emit instanceDestroyed(
+                                dead.instanceId,
+                                dead.info.appId);
+                }
             }
 
-            changeState(
-                        m_stack.last(),
+            changeState(m_stack.last(),
                         AppState::Foreground);
 
-            emit sceneCreated(m_stack.last());
+            // 注意：这里不是 Create，而是 Attach
+            emit sceneAttached(m_stack.last().instanceId);
 
             emit currentChanged();
 
             return;
         }
 
-        if(!m_stack.isEmpty())
-            changeState(
-                        m_stack.last(),
+        // ---------- 后台缓存恢复 ----------
+        if (m_backgroundApps.contains(appId))
+        {
+            if (!m_stack.isEmpty())
+                changeState(m_stack.last(),
+                            AppState::Background);
+
+            AppInstance instance =
+                    m_backgroundApps.take(appId);
+
+            changeState(instance,
+                        AppState::Foreground);
+
+            m_stack.append(instance);
+
+            qCInfo(logPageManager)
+                    << "[" << instance.instanceId << "]"
+                    << appId
+                    << "Restore from Background Cache";
+
+            emit sceneAttached(instance.instanceId);
+
+            emit currentChanged();
+
+            return;
+        }
+
+        // ---------- 首次创建 ----------
+        if (!m_stack.isEmpty())
+            changeState(m_stack.last(),
                         AppState::Background);
 
-        m_stack.append(
-                    createInstance(target));
+        m_stack.append(createInstance(target));
 
         emit instanceCreated(
                     m_stack.last().instanceId,
@@ -280,22 +326,40 @@ void PageManager::back()
     if (m_stack.size() <= 1)
         return;
 
-    AppInstance dead = m_stack.takeLast();
+    AppInstance current = m_stack.takeLast();
 
-    changeState(dead, AppState::Destroyed);
+    if (current.info.keepAlive)
+    {
+        qCInfo(logPageManager)
+                << "[" << current.instanceId << "]"
+                << current.info.appId
+                << "Move to Background Cache";
 
-    emit sceneDestroyed(dead.instanceId);
+        changeState(current, AppState::Background);
 
-    delete dead.context;
+        m_backgroundApps.insert(current.info.appId, current);
 
-    emit instanceDestroyed(
-            dead.instanceId,
-            dead.info.appId);
+        emit sceneDetached(current.instanceId);
+    }
+    else
+    {
+        qCInfo(logPageManager)
+                << "[" << current.instanceId << "]"
+                << current.info.appId
+                << "Destroyed";
 
-    changeState(m_stack.last(),
-                AppState::Foreground);
+        changeState(current, AppState::Destroyed);
 
-    emit sceneAttached(m_stack.last().instanceId);
+        emit sceneDestroyed(current.instanceId);
+
+        delete current.context;
+    }
+
+    AppInstance &prev = m_stack.last();
+
+    changeState(prev, AppState::Foreground);
+
+    emit sceneAttached(prev.instanceId);
 
     emit currentChanged();
 }

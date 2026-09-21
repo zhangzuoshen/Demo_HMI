@@ -18,10 +18,16 @@ BasePage {
         anchors.centerIn: parent
         spacing: 20
 
-        Text {
+        TextInput {
             text: "Settings Page"
             color: "white"
             font.pixelSize: 24
+        }
+
+        Text {
+            text: "Instance #" + AppContext.instanceId
+            color: "#DDDDDD"
+            font.pixelSize: 16
         }
 
         AppButton {
