@@ -17,6 +17,11 @@ Item {
     // 内容区域
     default property alias content: contentArea.data
 
+    //==============================
+    // 内部状态
+    //==============================
+    property string _cachedName:""
+    property int _cachedInstance:0
     property int lastState:AppState.None
 
     //==============================
@@ -30,6 +35,74 @@ Item {
     function onExit() {}
     function onDestroy() {}
     function onNewIntent() {}
+
+
+    //==============================
+    // 生命周期状态同步
+    //==============================
+    function syncState(state) {
+
+        switch (state) {
+
+        case AppState.Ready:
+            console.log("[Page]", _cachedName,
+                        "#" + _cachedInstance,
+                        "Ready")
+
+            root.onReady()
+            break
+
+        case AppState.Foreground:
+
+            if (lastState === AppState.Background) {
+
+                console.log("[Page]", _cachedName,
+                            "#" + _cachedInstance,
+                            "Resume")
+
+                root.onResume()
+
+            } else {
+
+                console.log("[Page]", _cachedName,
+                            "#" + _cachedInstance,
+                            "Enter")
+
+                root.onEnter()
+
+            }
+
+            break
+
+        case AppState.Background:
+
+            console.log("[Page]", _cachedName,
+                        "#" + _cachedInstance,
+                        "Pause")
+
+            root.onPause()
+            break
+
+        case AppState.Covered:
+
+            console.log("[Page]", _cachedName,
+                        "#" + _cachedInstance,
+                        "Covered")
+            break
+
+        case AppState.Suspended:
+
+            console.log("[Page]", _cachedName,
+                        "#" + _cachedInstance,
+                        "Suspended")
+            break
+
+        case AppState.Destroyed:
+            break
+        }
+
+        lastState = state
+    }
 
     //==============================
     // 背景
@@ -77,50 +150,47 @@ Item {
     //==============================
     // 页面创建
     //==============================
-    Component.onCompleted: {
+    Component.onCompleted:{
 
-        console.log(
-                    "[Page]",
-                    AppContext.appName,
-                    "#" + AppContext.instanceId,
+        if (AppContext) {
+
+            _cachedName = AppContext.appName
+            _cachedInstance = AppContext.instanceId
+
+        }
+
+        console.log("[Page]",
+                    _cachedName,
+                    "#" + _cachedInstance,
                     "Create")
 
         root.onCreate()
+
+        // 修复首次 Ready/Foreground 丢失
+        if (AppContext)
+            syncState(AppContext.state)
     }
 
-    Component.onDestruction: {
+    Component.onDestruction:{
 
-        console.log(
-                    "[Page]",
-                    AppContext.appName,
-                    "#" + AppContext.instanceId,
+        console.log("[Page]",
+                    _cachedName,
+                    "#" + _cachedInstance,
                     "Destroy")
 
         root.onDestroy()
     }
 
     //==============================
-    // 生命周期监听
+    // 监听 AppContext 状态
     //==============================
     Connections {
         target: AppContext
-        onStateChanged:{
-            switch(AppContext.state){
-            case AppState.Ready:
-                root.onReady()
-                break
-            case AppState.Foreground:
-                if(lastState===AppState.Background)
-                    root.onResume()
-                else
-                    root.onEnter()
-                break
-            case AppState.Background:
-                root.onPause()
-                break
-            }
-            lastState=AppContext.state
+
+        onStateChanged: {
+
+            if (AppContext)
+                syncState(AppContext.state)
         }
     }
-
 }

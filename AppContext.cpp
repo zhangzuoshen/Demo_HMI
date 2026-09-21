@@ -1,72 +1,52 @@
 #include "AppContext.h"
 
-AppContext::AppContext(
-        const AppInstance &instance,
-        QObject *parent)
-    : QObject(parent),
-      m_instance(instance),
-      m_state(instance.state)
+#include "AppInstance.h"
+
+AppContext::AppContext(QObject *parent)
+    : QObject(parent)
 {
+}
+
+void AppContext::initialize(const AppInstance &instance)
+{
+    m_appId = instance.info.appId;
+    m_appName = instance.info.name;
+    m_entry = instance.info.entry;
+    m_icon = instance.info.icon;
+
+    m_priority = instance.info.priority;
+
+    m_instanceId = instance.instanceId;
+
+    m_firstLaunch = instance.firstLaunch;
+
+    m_state = instance.state;
+
     switch(instance.info.launchMode)
     {
     case AppInfo::Standard:
-        m_launchModeString="standard";
+        m_launchMode="standard";
         break;
 
     case AppInfo::SingleTop:
-        m_launchModeString="singleTop";
+        m_launchMode="singleTop";
         break;
 
     case AppInfo::SingleTask:
-        m_launchModeString="singleTask";
+        m_launchMode="singleTask";
         break;
     }
 }
 
-QString AppContext::appId() const
-{
-    return m_instance.info.appId;
-}
-
-QString AppContext::appName() const
-{
-    return m_instance.info.name;
-}
-
-QString AppContext::entry() const
-{
-    return m_instance.info.entry;
-}
-
-QString AppContext::icon() const
-{
-    return m_instance.info.icon;
-}
-
-int AppContext::priority() const
-{
-    return m_instance.info.priority;
-}
-
-QString AppContext::launchMode() const
-{
-    return m_launchModeString;
-}
-
-quint64 AppContext::instanceId() const
-{
-    return m_instance.instanceId;
-}
-
-bool AppContext::firstLaunch() const
-{
-    return m_instance.firstLaunch;
-}
-
-AppState::State AppContext::state() const
-{
-    return m_state;
-}
+QString AppContext::appId() const{return m_appId;}
+QString AppContext::appName() const{return m_appName;}
+QString AppContext::entry() const{return m_entry;}
+QString AppContext::icon() const{return m_icon;}
+int AppContext::priority() const{return m_priority;}
+QString AppContext::launchMode() const{return m_launchMode;}
+quint64 AppContext::instanceId() const{return m_instanceId;}
+bool AppContext::firstLaunch() const{return m_firstLaunch;}
+AppState::State AppContext::state() const{return m_state;}
 
 void AppContext::setState(AppState::State state)
 {

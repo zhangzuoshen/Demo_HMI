@@ -3,13 +3,14 @@
 
 #include <QObject>
 
-#include "AppInstance.h"
+#include "AppState.h"
+
+struct AppInstance;
 
 class AppContext : public QObject
 {
     Q_OBJECT
 
-    // Manifest
     Q_PROPERTY(QString appId READ appId CONSTANT)
     Q_PROPERTY(QString appName READ appName CONSTANT)
     Q_PROPERTY(QString entry READ entry CONSTANT)
@@ -18,7 +19,6 @@ class AppContext : public QObject
     Q_PROPERTY(int priority READ priority CONSTANT)
     Q_PROPERTY(QString launchMode READ launchMode CONSTANT)
 
-    // Runtime
     Q_PROPERTY(quint64 instanceId READ instanceId CONSTANT)
     Q_PROPERTY(bool firstLaunch READ firstLaunch CONSTANT)
 
@@ -28,9 +28,9 @@ class AppContext : public QObject
 
 public:
 
-    explicit AppContext(
-            const AppInstance &instance,
-            QObject *parent=nullptr);
+    explicit AppContext(QObject *parent=nullptr);
+
+    void initialize(const AppInstance &instance);
 
     QString appId() const;
     QString appName() const;
@@ -55,11 +55,20 @@ signals:
 
 private:
 
-    AppInstance m_instance;
+    QString m_appId;
+    QString m_appName;
+    QString m_entry;
+    QString m_icon;
 
-    QString m_launchModeString;
+    QString m_launchMode;
 
-    AppState::State m_state;
+    int m_priority = 0;
+
+    quint64 m_instanceId = 0;
+
+    bool m_firstLaunch = true;
+
+    AppState::State m_state = AppState::None;
 };
 
 #endif

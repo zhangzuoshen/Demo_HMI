@@ -6,6 +6,8 @@
 #include "AppRegistry.h"
 #include "AppState.h"
 
+class AppContext;
+
 struct AppInstance
 {
     quint64 instanceId = 0;
@@ -15,6 +17,8 @@ struct AppInstance
     AppInfo info;
 
     AppState::State state = AppState::None;
+
+    AppContext *context = nullptr;
 };
 
 #endif

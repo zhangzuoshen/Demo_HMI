@@ -36,7 +36,7 @@ public:
 
     quint64 currentInstanceId() const;
 
-    AppInstance currentApp() const;
+    const AppInstance *currentApp() const;
 
     const QVector<AppInstance>& stack() const;
 

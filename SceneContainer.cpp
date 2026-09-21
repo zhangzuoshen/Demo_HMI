@@ -40,12 +40,6 @@ void SceneContainer::setPageManager(
     if(m_pageManager)
     {
         connect(
-            mgr,
-            SIGNAL(instanceStateChanged(quint64,int)),
-            this,
-            SLOT(onStateChanged(quint64,int)));
-
-        connect(
             m_pageManager,
             SIGNAL(currentChanged()),
             this,
@@ -57,20 +51,6 @@ void SceneContainer::setPageManager(
     emit pageManagerChanged();
 }
 
-void SceneContainer::onStateChanged(
-        quint64 id,
-        int state)
-{
-    if(id!=m_currentInstance.instanceId)
-        return;
-
-    if(!m_appContext)
-        return;
-
-    m_appContext->setState(
-                static_cast<AppState::State>(state));
-}
-
 void SceneContainer::onCurrentChanged()
 {
     auto mgr=
@@ -80,12 +60,12 @@ void SceneContainer::onCurrentChanged()
     if(!mgr)
         return;
 
-    AppInstance instance=mgr->currentApp();
+    const AppInstance *instance = mgr->currentApp();
 
-    if(instance.instanceId==0)
+    if (!instance)
         return;
 
-    load(mgr->currentApp());
+    load(*instance);
 }
 
 void SceneContainer::load(
@@ -112,14 +92,9 @@ void SceneContainer::load(
                 m_engine->rootContext(),
                 this);
 
-    m_appContext=
-            new AppContext(
-                instance,
-                m_context);
-
     m_context->setContextProperty(
                 "AppContext",
-                m_appContext);
+                instance.context);
 
     // 创建组件：
     QString path=
@@ -135,7 +110,7 @@ void SceneContainer::load(
 
     if(m_component->isError())
     {
-        qWarning()
+        qCWarning(logScene)
                 << m_component->errors();
 
         return;
@@ -163,14 +138,13 @@ void SceneContainer::load(
     m_rootItem->setHeight(height());
 
     // 通知：
-    auto mgr=
-            qobject_cast<PageManager*>(
-                m_pageManager);
+    auto mgr = qobject_cast<PageManager *>(m_pageManager);
+    if (mgr) {
+        qCInfo(logScene)
+            << "Notify pageReady:"
+            << m_currentInstance.instanceId;
 
-    if(mgr)
-    {
-        mgr->pageReady(
-                    instance.instanceId);
+        mgr->pageReady(m_currentInstance.instanceId);
     }
 }
 
@@ -193,10 +167,7 @@ void SceneContainer::unload()
     if(m_context)
     {
         m_context->deleteLater();
-
         m_context=nullptr;
-
-        m_appContext=nullptr;
     }
 }
 

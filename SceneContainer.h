@@ -39,10 +39,6 @@ protected:
 
 private slots:
 
-    void onStateChanged(
-            quint64 instanceId,
-            int state);
-
     void onCurrentChanged();
 
 private:

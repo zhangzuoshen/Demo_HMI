@@ -1,6 +1,7 @@
 #include "PageManager.h"
 
 #include "Log.h"
+#include "AppContext.h"
 
 PageManager::PageManager(
         AppRegistry *registry,
@@ -26,11 +27,12 @@ quint64 PageManager::currentInstanceId() const
             : m_stack.last().instanceId;
 }
 
-AppInstance PageManager::currentApp() const
+const AppInstance *PageManager::currentApp() const
 {
-    return m_stack.isEmpty()
-            ? AppInstance()
-            : m_stack.last();
+    if (m_stack.isEmpty())
+        return nullptr;
+
+    return &m_stack.last();
 }
 
 const QVector<AppInstance>& PageManager::stack() const
@@ -38,18 +40,18 @@ const QVector<AppInstance>& PageManager::stack() const
     return m_stack;
 }
 
-AppInstance PageManager::createInstance(
-        const AppInfo &info)
+AppInstance PageManager::createInstance(const AppInfo &info)
 {
     AppInstance instance;
 
-    instance.instanceId=m_nextInstanceId++;
+    instance.instanceId = m_nextInstanceId++;
+    instance.info = info;
+    instance.firstLaunch = true;
+    instance.state = AppState::Created;
 
-    instance.firstLaunch=true;
+    instance.context = new AppContext();
 
-    instance.info=info;
-
-    instance.state=AppState::Created;
+    instance.context->initialize(instance);
 
     return instance;
 }
@@ -63,6 +65,9 @@ void PageManager::changeState(
 
     instance.state=state;
 
+    if(instance.context)
+        instance.context->setState(state);
+
     qCInfo(logPageManager)
             << "["<<instance.instanceId<<"]"
             << instance.info.appId
@@ -71,7 +76,7 @@ void PageManager::changeState(
 
     emit instanceStateChanged(
                 instance.instanceId,
-                static_cast<int>(state));
+                state);
 }
 
 int PageManager::findTask(
@@ -110,17 +115,15 @@ void PageManager::launchApp(
                 m_stack.last(),
                 AppState::Background);
 
-        m_stack.append(
-                    createInstance(target));
+        m_stack.append(createInstance(target));
+
+        m_pendingReadyId = m_stack.last().instanceId;
 
         emit instanceCreated(
-                    m_stack.last().instanceId,
-                    appId);
+                m_stack.last().instanceId,
+                appId);
 
         emit currentChanged();
-
-        m_pendingReadyId=
-                m_stack.last().instanceId;
 
         break;
     }
@@ -143,14 +146,14 @@ void PageManager::launchApp(
         m_stack.append(
                     createInstance(target));
 
+        m_pendingReadyId=
+                m_stack.last().instanceId;
+
         emit instanceCreated(
                     m_stack.last().instanceId,
                     appId);
 
         emit currentChanged();
-
-        m_pendingReadyId=
-                m_stack.last().instanceId;
 
         break;
     }
@@ -206,29 +209,31 @@ void PageManager::launchApp(
     }
 }
 
-void PageManager::pageReady(
-        quint64 instanceId)
+void PageManager::pageReady(quint64 instanceId)
 {
-    if(instanceId!=m_pendingReadyId)
+    qCInfo(logPageManager)
+        << "pageReady request:"
+        << instanceId
+        << "pending:"
+        << m_pendingReadyId;
+
+    if (instanceId != m_pendingReadyId) {
+        qCWarning(logPageManager)
+            << "pageReady ignored";
+        return;
+    }
+
+    if (m_stack.isEmpty())
         return;
 
-    if(m_stack.isEmpty())
-        return;
+    m_pendingReadyId = 0;
 
-    m_pendingReadyId=0;
+    AppInstance &instance = m_stack.last();
 
-    AppInstance &instance=
-            m_stack.last();
+    changeState(instance, AppState::Ready);
+    changeState(instance, AppState::Foreground);
 
-    changeState(
-                instance,
-                AppState::Ready);
-
-    changeState(
-                instance,
-                AppState::Foreground);
-
-    instance.firstLaunch=false;
+    instance.firstLaunch = false;
 }
 
 void PageManager::back()
@@ -241,12 +246,12 @@ void PageManager::back()
         return;
     }
 
-    AppInstance dead=
-            m_stack.takeLast();
+    AppInstance dead=m_stack.takeLast();
 
-    changeState(
-                dead,
-                AppState::Destroyed);
+    changeState(dead,AppState::Destroyed);
+
+    delete dead.context;
+    dead.context=nullptr;
 
     emit instanceDestroyed(
                 dead.instanceId,
