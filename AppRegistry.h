@@ -23,6 +23,8 @@ struct AppInfo
     int priority = 0;
 
     LaunchMode launchMode = Standard;
+
+    bool keepAlive = false;
 };
 
 class AppRegistry : public QObject
@@ -45,12 +47,11 @@ private:
 
     bool loadManifest(const QString &appDir);
 
-    AppInfo::LaunchMode parseLaunchMode(
-            const QString &mode) const;
+    AppInfo::LaunchMode parseLaunchMode(const QString &mode) const;
 
 private:
 
-    QMap<QString,AppInfo> m_apps;
+    QMap<QString, AppInfo> m_apps;
 };
 
 #endif

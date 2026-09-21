@@ -1,28 +1,29 @@
 #ifndef SCENECONTAINER_H
 #define SCENECONTAINER_H
 
+#include <QMap>
 #include <QQuickItem>
-#include <QScopedPointer>
 
 class PageManager;
 class PageView;
+class AppInstance;
 
 class SceneContainer : public QQuickItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QObject *pageManager
+    Q_PROPERTY(QObject* pageManager
                READ pageManager
                WRITE setPageManager
                NOTIFY pageManagerChanged)
 
 public:
 
-    explicit SceneContainer(QQuickItem *parent = nullptr);
+    explicit SceneContainer(QQuickItem *parent=nullptr);
 
     ~SceneContainer() override;
 
-    QObject *pageManager() const;
+    QObject* pageManager() const;
 
     void setPageManager(QObject *mgr);
 
@@ -41,9 +42,17 @@ private slots:
 
 private:
 
-    QObject *m_pageManager = nullptr;
+    PageView *findView(quint64 instanceId);
 
-    QScopedPointer<PageView> m_currentView;
+    PageView *createView(const AppInstance &instance);
+
+private:
+
+    QObject *m_pageManager=nullptr;
+
+    PageView *m_frontView=nullptr;
+
+    QMap<quint64,PageView*> m_cachedViews;
 };
 
 #endif

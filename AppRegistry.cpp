@@ -88,6 +88,8 @@ bool AppRegistry::loadManifest(const QString &appDir)
 
     info.priority =
             obj["priority"].toInt(0);
+    info.keepAlive =
+            obj["keepAlive"].toBool(false);
 
     info.launchMode =
             parseLaunchMode(
@@ -113,7 +115,9 @@ bool AppRegistry::loadManifest(const QString &appDir)
             << "priority:"
             << info.priority
             << "launchMode:"
-            << obj["launchMode"].toString();
+            << obj["launchMode"].toString()
+            << "keepAlive:"
+            << info.keepAlive;
 
     return true;
 }

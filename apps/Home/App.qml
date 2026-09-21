@@ -1,4 +1,5 @@
 import QtQuick 2.12
+import QtQuick.Controls 2.12
 import "../components"
 
 BasePage {
@@ -34,6 +35,10 @@ BasePage {
             text: "Instance #" + AppContext.instanceId
             color: "#DDDDDD"
             font.pixelSize: 16
+        }
+
+        Slider {
+
         }
 
         AppButton {

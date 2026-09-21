@@ -10,7 +10,7 @@
 
     "preload": false,
     "background": true,
-    "keepAlive": true,
+    "keepAlive": false,
 
     "permissions": [
       "audio",

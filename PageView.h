@@ -2,8 +2,6 @@
 #define PAGEVIEW_H
 
 #include <QObject>
-#include <QPointer>
-
 #include <QQmlContext>
 #include <QQmlComponent>
 #include <QQuickItem>
@@ -32,6 +30,8 @@ public:
 
     void resize(const QSizeF &size);
 
+    bool isAttached() const;
+
     QQuickItem *rootItem() const;
 
     const AppInstance &instance() const;
@@ -45,6 +45,8 @@ private:
     QQmlComponent *m_component = nullptr;
 
     QQuickItem *m_rootItem = nullptr;
+
+    bool m_attached = false;
 
     AppInstance m_instance;
 };
