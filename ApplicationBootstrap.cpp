@@ -27,11 +27,10 @@ bool ApplicationBootstrap::initialize(
 
     qmlRegisterUncreatableMetaObject(
                 AppState::staticMetaObject,
-                "HMI.Core",      // QML模块
+                "HMI.Core",
                 1, 0,
-                "AppState",      // QML类型名
+                "AppState",
                 "AppState is an enum only");
-
 
     qmlRegisterType<SceneContainer>(
                 "HMI.Core",

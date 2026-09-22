@@ -109,12 +109,6 @@ bool PageView::create(const AppInstance &instance)
 
     setWindowState(WindowState::Detached);
 
-    qCInfo(logScene)
-            << "Create:"
-            << instance.info.appId
-            << "#"
-            << instance.instanceId;
-
     return true;
 }
 

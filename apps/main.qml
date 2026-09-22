@@ -48,7 +48,7 @@ Window {
     }
 
     //==============================
-    // Overlay Scene（预留）
+    // Overlay Scene
     //==============================
     Item {
         id: overlayScene
@@ -58,7 +58,7 @@ Window {
     }
 
     //==============================
-    // Popup Scene（预留）
+    // Popup Scene
     //==============================
     Item {
         id: popupScene
@@ -67,9 +67,10 @@ Window {
     }
 
     //==============================
-    // 调试信息
+    // Debug Scene
     //==============================
     Rectangle {
+        id: debugScene
         anchors.top: parent.top
         anchors.right: parent.right
         width: 220
@@ -97,7 +98,7 @@ Window {
     }
 
     //==============================
-    // 启动日志
+    // Boot log
     //==============================
     Component.onCompleted: {
         console.log("[Main] Window Ready")
