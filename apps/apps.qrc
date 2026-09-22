@@ -10,5 +10,6 @@
         <file>components/BasePage.qml</file>
         <file>components/AppButton.qml</file>
         <file>components/TitleBar.qml</file>
+        <file>components/HeavyTestPage.qml</file>
     </qresource>
 </RCC>

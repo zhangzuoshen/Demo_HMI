@@ -33,14 +33,14 @@ BasePage {
         AppButton {
             text: "Open Settings"
             onClicked: {
-                PageManager.launchApp("settings")
+                PageManager.launch("settings")
             }
         }
 
         AppButton {
             text: "Back Home"
             onClicked: {
-                PageManager.launchApp("home")
+                PageManager.launch("home")
             }
         }
     }

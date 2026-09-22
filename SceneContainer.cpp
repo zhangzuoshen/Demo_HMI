@@ -1,6 +1,7 @@
 #include "SceneContainer.h"
 
 #include <QQmlEngine>
+#include <QQuickItem>
 
 #include "Log.h"
 #include "PageManager.h"
@@ -13,8 +14,34 @@ SceneContainer::SceneContainer(QQuickItem *parent)
 
 SceneContainer::~SceneContainer()
 {
-    qDeleteAll(m_cachedViews);
-    m_cachedViews.clear();
+}
+
+void SceneContainer::setPageManager(QObject *manager)
+{
+    if (m_pageManager == manager)
+        return;
+
+    if (m_pageManager)
+        disconnect(m_pageManager, nullptr, this, nullptr);
+
+    m_pageManager = manager;
+
+    auto pm = qobject_cast<PageManager *>(manager);
+
+    if (!pm)
+        return;
+
+    connect(pm, &PageManager::sceneCreated,
+            this, &SceneContainer::onSceneCreated);
+
+    connect(pm, &PageManager::sceneAttached,
+            this, &SceneContainer::onSceneAttached);
+
+    connect(pm, &PageManager::sceneDetached,
+            this, &SceneContainer::onSceneDetached);
+
+    connect(pm, &PageManager::sceneDestroyed,
+            this, &SceneContainer::onSceneDestroyed);
 }
 
 QObject *SceneContainer::pageManager() const
@@ -22,80 +49,108 @@ QObject *SceneContainer::pageManager() const
     return m_pageManager;
 }
 
-void SceneContainer::setPageManager(QObject *mgr)
+PageView *SceneContainer::findView(quint64 instanceId) const
 {
-    if(m_pageManager==mgr)
-        return;
-
-    if(m_pageManager)
-        disconnect(m_pageManager,
-                   nullptr,
-                   this,
-                   nullptr);
-
-    m_pageManager=mgr;
-
-    auto pm=qobject_cast<PageManager*>(mgr);
-
-    if(pm)
-    {
-        connect(pm,
-                &PageManager::sceneCreated,
-                this,
-                &SceneContainer::onSceneCreated);
-
-        connect(pm,
-                &PageManager::sceneAttached,
-                this,
-                &SceneContainer::onSceneAttached);
-
-        connect(pm,
-                &PageManager::sceneDetached,
-                this,
-                &SceneContainer::onSceneDetached);
-
-        connect(pm,
-                &PageManager::sceneDestroyed,
-                this,
-                &SceneContainer::onSceneDestroyed);
-    }
-
-    emit pageManagerChanged();
-}
-
-PageView *SceneContainer::findView(quint64 instanceId)
-{
-    return m_cachedViews.value(instanceId,nullptr);
+    return m_cachedViews.value(instanceId, nullptr);
 }
 
 PageView *SceneContainer::createView(const AppInstance &instance)
 {
-    if(auto cached=findView(instance.instanceId))
+    if (auto cached = findView(instance.instanceId))
         return cached;
 
-    PageView *view=
-            new PageView(qmlEngine(this),this);
+    PageView *view =
+            new PageView(qmlEngine(this), this);
 
-    if(!view->create(instance))
+    m_cachedViews.insert(instance.instanceId, view);
+
+    connect(view,
+            &PageView::incubationReady,
+            this,
+            [this](quint64 id)
     {
-        delete view;
+        PageView *readyView = findView(id);
+
+        if (!readyView)
+            return;
+
+        qCInfo(logScene)
+                << "Incubation Ready:"
+                << readyView->instance().info.appId
+                << "#"
+                << id;
+
+        // 同步窗口尺寸
+        readyView->resize(QSizeF(width(), height()));
+
+        //========================================================
+        // 不是当前期望显示的前台窗口：保持后台 Ready，不抢占焦点
+        //========================================================
+        if (id != m_pendingFrontId)
+        {
+            qCInfo(logScene)
+                    << "Background incubation finished:"
+                    << readyView->instance().info.appId
+                    << "#"
+                    << id;
+
+            return;
+        }
+
+        //========================================================
+        // 当前窗口已经是前台（例如 onSceneAttached 已经等待孵化）
+        //========================================================
+        if (m_frontView == readyView && readyView->isAttached())
+        {
+            qCDebug(logScene)
+                    << "Already attached:"
+                    << id;
+            return;
+        }
+
+        //========================================================
+        // 切换前台窗口
+        //========================================================
+        if (m_frontView && m_frontView != readyView)
+            m_frontView->detach();
+
+        m_frontView = readyView;
+
+        m_frontView->attach(this);
+
+        //========================================================
+        // 只有首次完成孵化时才通知 PageManager
+        //========================================================
+        auto pm = qobject_cast<PageManager *>(m_pageManager);
+
+        if (pm)
+            pm->pageReady(id);
+    });
+
+    connect(view,
+            &PageView::incubationFailed,
+            this,
+            [this](quint64 id)
+    {
+        qCWarning(logScene)
+                << "Incubation Failed:"
+                << id;
+
+        PageView *failed = findView(id);
+
+        if (failed)
+        {
+            m_cachedViews.remove(id);
+            failed->deleteLater();
+        }
+    });
+
+    if (!view->create(instance))
+    {
+        m_cachedViews.remove(instance.instanceId);
+        view->deleteLater();
         return nullptr;
     }
-
-    view->resize(QSizeF(width(),height()));
-
-    m_cachedViews.insert(instance.instanceId,
-                         view);
-
-    return view;
-}
-
-void SceneContainer::onSceneCreated(AppInstance instance)
-{
-    PageView *view=createView(instance);
-
-    if(!view)
-        return;
 
     qCInfo(logScene)
             << "Create:"
@@ -103,41 +158,56 @@ void SceneContainer::onSceneCreated(AppInstance instance)
             << "#"
             << instance.instanceId;
 
-    if(m_frontView &&
-       m_frontView!=view)
-    {
-        qCInfo(logScene)
-                << "Detach:"
-                << m_frontView->instance().info.appId;
+    return view;
+}
 
+void SceneContainer::onSceneCreated(const AppInstance &instance)
+{
+    // 当前真正等待显示的页面
+    m_pendingFrontId = instance.instanceId;
+
+    PageView *view = findView(instance.instanceId);
+
+    // 首次创建（异步孵化）
+    if (!view)
+    {
+        createView(instance);
+        return;
+    }
+
+    // KeepAlive 页面恢复
+    qCInfo(logScene)
+            << "Attach:"
+            << instance.info.appId
+            << "#"
+            << instance.instanceId;
+
+    if (m_frontView &&
+        m_frontView != view)
+    {
         m_frontView->detach();
     }
 
-    m_frontView=view;
+    m_frontView = view;
 
-    if(!m_frontView->isAttached())
-        m_frontView->attach(this);
-
-    m_frontView->resize(QSizeF(width(),height()));
-
-    auto pm=qobject_cast<PageManager*>(m_pageManager);
-
-    if(pm)
-    {
-        qCInfo(logScene)
-                << "Notify pageReady:"
-                << instance.instanceId;
-
-        pm->pageReady(instance.instanceId);
-    }
+    m_frontView->resize(QSizeF(width(), height()));
+    m_frontView->attach(this);
 }
 
 void SceneContainer::onSceneAttached(quint64 instanceId)
 {
-    PageView *view=findView(instanceId);
+    // 更新当前期望显示的前台实例
+    m_pendingFrontId = instanceId;
 
-    if(!view)
+    PageView *view = findView(instanceId);
+
+    if (!view)
+    {
+        qCWarning(logScene)
+                << "Attach failed: view not found:"
+                << instanceId;
         return;
+    }
 
     qCInfo(logScene)
             << "Attach:"
@@ -145,35 +215,34 @@ void SceneContainer::onSceneAttached(quint64 instanceId)
             << "#"
             << instanceId;
 
-    if(m_frontView &&
-       m_frontView!=view)
+    // 切换前台窗口
+    if (m_frontView && m_frontView != view)
+        m_frontView->detach();
+
+    m_frontView = view;
+
+    // ★ 页面还没孵化完成
+    if (!view->isReady())
     {
         qCInfo(logScene)
-                << "Detach:"
-                << m_frontView->instance().info.appId;
-
-        m_frontView->detach();
+                << "Wait incubation:"
+                << instanceId;
+        return;
     }
 
-    m_frontView=view;
 
-    if(!m_frontView->isAttached())
-        m_frontView->attach(this);
+    // 同步窗口尺寸
+    m_frontView->resize(QSizeF(width(), height()));
 
-    m_frontView->resize(QSizeF(width(),height()));
-
-    // -------- Resume 放到 Attach 后 --------
-    auto pm=qobject_cast<PageManager*>(m_pageManager);
-
-    if(pm)
-        pm->pageAttached(instanceId);
+    // 挂载到 Scene
+    m_frontView->attach(this);
 }
 
 void SceneContainer::onSceneDetached(quint64 instanceId)
 {
-    PageView *view=findView(instanceId);
+    PageView *view = findView(instanceId);
 
-    if(!view)
+    if (!view)
         return;
 
     qCInfo(logScene)
@@ -182,11 +251,10 @@ void SceneContainer::onSceneDetached(quint64 instanceId)
             << "#"
             << instanceId;
 
-    if(view->isAttached())
-        view->detach();
+    view->detach();
 
-    // 注意：
-    // 不清空 m_frontView。
+    if (m_frontView == view)
+        m_frontView = nullptr;
 }
 
 void SceneContainer::onSceneDestroyed(quint64 instanceId)
@@ -207,19 +275,19 @@ void SceneContainer::onSceneDestroyed(quint64 instanceId)
 
     m_cachedViews.remove(instanceId);
 
-    // 不要同步 delete
     view->deleteLater();
 }
 
 void SceneContainer::geometryChanged(const QRectF &newGeometry,
                                      const QRectF &oldGeometry)
 {
-    QQuickItem::geometryChanged(newGeometry,
-                                oldGeometry);
+    QQuickItem::geometryChanged(newGeometry, oldGeometry);
 
-    for(auto view:m_cachedViews)
+    QSizeF size = newGeometry.size();
+
+    for (auto view : m_cachedViews)
     {
-        if(view)
-            view->resize(newGeometry.size());
+        if (view)
+            view->resize(size);
     }
 }

@@ -14,6 +14,10 @@ BasePage {
     onPageResume: {console.log("[Settings] Resume")}
     onPageDestroy: {console.log("[Settings] Destroy")}
 
+    HeavyTestPage {
+
+    }
+
     Column {
         anchors.centerIn: parent
         spacing: 20
@@ -33,7 +37,7 @@ BasePage {
         AppButton {
             text: "Open Settings Again"
             onClicked: {
-                PageManager.launchApp("settings")
+                PageManager.launch("settings")
             }
         }
 

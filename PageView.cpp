@@ -1,14 +1,15 @@
 #include "PageView.h"
 
-#include <QQmlEngine>
+#include <QQmlError>
 
 #include "AppContext.h"
 #include "Log.h"
+#include "PageIncubator.h"
 
 PageView::PageView(QQmlEngine *engine,
                    QObject *parent)
-    : QObject(parent),
-      m_engine(engine)
+    : QObject(parent)
+    , m_engine(engine)
 {
 }
 
@@ -17,107 +18,79 @@ PageView::~PageView()
     destroy();
 }
 
-WindowState::State PageView::windowState() const
-{
-    return m_windowState;
-}
-
-void PageView::setWindowState(WindowState::State s)
-{
-    if(m_windowState==s)
-        return;
-
-    m_windowState=s;
-
-    qCInfo(logScene)
-            << "Window:"
-            << instance().info.appId
-            << "#"
-            << instance().instanceId
-            << WindowState::toString(s);
-
-    emit windowStateChanged();
-}
-
 bool PageView::create(const AppInstance &instance)
 {
     destroy();
+
+    m_destroying = false;
+    m_ready = false;
+    m_attached = false;
 
     m_instance = instance;
 
     if (!m_engine)
         return false;
 
-    // 每个 App 创建独立 QQmlContext
-    m_context = new QQmlContext(m_engine->rootContext(), this);
-    m_context->setContextProperty("AppContext", instance.context);
+    m_context = new QQmlContext(
+                m_engine->rootContext(),
+                this);
+
+    m_context->setContextProperty(
+                "AppContext",
+                instance.context);
 
     QString path = instance.info.basePath;
     path.replace(":/", "qrc:/");
 
-    QUrl url(path + "/" + instance.info.entry);
+    m_component = new QQmlComponent(
+                m_engine,
+                QUrl(path + "/" + instance.info.entry),
+                this);
 
-    m_component = new QQmlComponent(m_engine, url, this);
+    m_incubator = new PageIncubator(this);
 
-    if (m_component->isError())
-    {
-        qCCritical(logScene)
-                << "Load QML failed:"
-                << url;
+    m_component->create(
+                *m_incubator,
+                m_context);
 
-        for (const QQmlError &e : m_component->errors())
-            qCCritical(logScene) << e.toString();
-
-        destroy();
-        return false;
-    }
-
-    QObject *obj = m_component->create(m_context);
-
-    if (!obj)
-    {
-        qCCritical(logScene)
-                << "Create QML failed:"
-                << url;
-
-        for (const QQmlError &e : m_component->errors())
-            qCCritical(logScene) << e.toString();
-
-        destroy();
-        return false;
-    }
-
-    m_rootItem = qobject_cast<QQuickItem *>(obj);
-
-    if (!m_rootItem)
-    {
-        qCCritical(logScene)
-                << "Root object is not QQuickItem:"
-                << url;
-
-        delete obj;
-        destroy();
-        return false;
-    }
-
-    // QObject 父对象只设置一次
-    m_rootItem->setParent(this);
-
-    // 初始状态
-    m_rootItem->setVisible(false);
-    m_attached = false;
-
-    setWindowState(WindowState::Detached);
+    setWindowState(WindowState::Creating);
 
     return true;
 }
 
 void PageView::destroy()
 {
+    if (m_destroying)
+        return;
+
+    m_destroying = true;
+
     m_attached = false;
+    m_ready = false;
 
-    setWindowState(WindowState::Detached);
+    //==============================
+    // 取消异步孵化
+    //==============================
+    if (m_incubator)
+    {
+        if (m_incubator->status() == QQmlIncubator::Loading)
+        {
+            qCInfo(logScene)
+                    << "Incubation cancelled:"
+                    << m_instance.info.appId
+                    << "#"
+                    << m_instance.instanceId;
 
+            m_incubator->clear();
+        }
+
+        delete m_incubator;
+        m_incubator = nullptr;
+    }
+
+    //==============================
+    // RootItem
+    //==============================
     if (m_rootItem)
     {
         m_rootItem->setParentItem(nullptr);
@@ -125,61 +98,57 @@ void PageView::destroy()
         m_rootItem = nullptr;
     }
 
+    //==============================
+    // Component
+    //==============================
     if (m_component)
     {
         m_component->deleteLater();
         m_component = nullptr;
     }
 
+    //==============================
+    // Context
+    //==============================
     if (m_context)
     {
         m_context->deleteLater();
         m_context = nullptr;
     }
+
+    setWindowState(WindowState::Detached);
+
+    m_destroying = false;
+}
+
+bool PageView::isReady() const
+{
+    return m_ready;
 }
 
 void PageView::attach(QQuickItem *parent)
 {
-    if (!m_rootItem || !parent)
+    if (!m_rootItem)
         return;
 
-    if (m_rootItem->parentItem() == parent && m_attached)
-        return;
-
+    m_rootItem->setParent(parent);
     m_rootItem->setParentItem(parent);
-    m_rootItem->setVisible(true);
 
     m_attached = true;
 
     setWindowState(WindowState::Attached);
-
-    if (m_instance.context)
-        m_instance.context->setWindowState(WindowState::Attached);
 }
 
 void PageView::detach()
 {
-    if (!m_rootItem || !m_attached)
+    if (!m_rootItem)
         return;
 
-    m_rootItem->setVisible(false);
     m_rootItem->setParentItem(nullptr);
 
     m_attached = false;
 
     setWindowState(WindowState::Detached);
-
-    if (m_instance.context)
-        m_instance.context->setWindowState(WindowState::Detached);
-}
-
-void PageView::resize(const QSizeF &size)
-{
-    if(!m_rootItem)
-        return;
-
-    m_rootItem->setWidth(size.width());
-    m_rootItem->setHeight(size.height());
 }
 
 bool PageView::isAttached() const
@@ -187,12 +156,63 @@ bool PageView::isAttached() const
     return m_attached;
 }
 
-QQuickItem *PageView::rootItem() const
+void PageView::resize(const QSizeF &size)
 {
-    return m_rootItem;
+    if (!m_rootItem)
+        return;
+
+    m_rootItem->setSize(size);
 }
 
 const AppInstance &PageView::instance() const
 {
     return m_instance;
+}
+
+WindowState::State PageView::windowState() const
+{
+    return m_windowState;
+}
+
+void PageView::onIncubationReady()
+{
+    if (m_destroying)
+        return;
+
+    if (!m_incubator)
+        return;
+
+    QObject *obj = m_incubator->object();
+
+    m_rootItem = qobject_cast<QQuickItem *>(obj);
+
+    if (!m_rootItem)
+        return;
+
+    m_ready = true;
+
+    setWindowState(WindowState::Ready);
+
+    emit incubationReady(m_instance.instanceId);
+}
+
+void PageView::onIncubationError(const QList<QQmlError> &errors)
+{
+    if (m_destroying)
+        return;
+
+    qCCritical(logScene)
+            << "Incubation failed:"
+            << m_instance.info.appId
+            << errors;
+
+    emit incubationFailed(m_instance.instanceId);
+}
+
+void PageView::setWindowState(WindowState::State state)
+{
+    if (m_windowState == state)
+        return;
+
+    m_windowState = state;
 }

@@ -11,6 +11,7 @@ HEADERS += \
     AppState.h \
     ApplicationBootstrap.h \
     Log.h \
+    PageIncubator.h \
     PageManager.h \
     PageView.h \
     SceneContainer.h \
@@ -22,6 +23,7 @@ SOURCES += \
         AppRegistry.cpp \
         ApplicationBootstrap.cpp \
         Log.cpp \
+        PageIncubator.cpp \
         PageManager.cpp \
         PageView.cpp \
         SceneContainer.cpp \

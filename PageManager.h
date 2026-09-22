@@ -3,9 +3,9 @@
 
 #include <QObject>
 #include <QVector>
-#include <QHash>
 
 #include "AppRegistry.h"
+#include "AppContext.h"
 #include "AppInstance.h"
 #include "AppState.h"
 
@@ -21,86 +21,56 @@ class PageManager : public QObject
                READ currentInstanceId
                NOTIFY currentChanged)
 
+    Q_PROPERTY(bool canGoBack
+               READ canGoBack
+               NOTIFY currentChanged)
+
 public:
-
-    enum LaunchReason
-    {
-        User,
-        System
-    };
-    Q_ENUM(LaunchReason)
-
     explicit PageManager(AppRegistry *registry,
                          QObject *parent = nullptr);
 
-    QString currentAppId() const;
-    quint64 currentInstanceId() const;
-
-    AppInstance currentApp() const;
-    const QVector<AppInstance> &stack() const;
-
-    Q_INVOKABLE void launchApp(const QString &appId,
-                               LaunchReason reason = User);
+    Q_INVOKABLE void launch(const QString &appId);
 
     Q_INVOKABLE void back();
 
-    // 首次创建完成（只触发一次）
+    QString currentAppId() const;
+
+    quint64 currentInstanceId() const;
+
+    bool canGoBack() const;
+
+public slots:
     void pageReady(quint64 instanceId);
 
-    // SceneContainer Attach 完成后调用
-    void pageAttached(quint64 instanceId);
-
 signals:
+    void sceneCreated(const AppInstance &instance);
 
-    // QML Loader 切换
-    void currentChanged();
-
-    // App 生命周期（QML BasePage 使用）
-    void appEntered(quint64 instanceId);
-    void appPaused(quint64 instanceId);
-    void appResumed(quint64 instanceId);
-    void appExited(quint64 instanceId);
-    void appReady(quint64 instanceId);
-
-    // Instance 生命周期
-    void instanceCreated(quint64 instanceId,
-                         QString appId);
-
-    void instanceDestroyed(quint64 instanceId,
-                           QString appId);
-
-    // Scene 生命周期（SceneContainer 使用）
-    void sceneCreated(AppInstance instance);
     void sceneAttached(quint64 instanceId);
+
     void sceneDetached(quint64 instanceId);
+
     void sceneDestroyed(quint64 instanceId);
 
-private:
+    void currentChanged();
 
+private:
     AppInstance createInstance(const AppInfo &info);
 
-    // 只修改状态，不发送生命周期
-    void setState(AppInstance &instance,
-                  AppState::State state);
-
-    // 根据状态发送生命周期事件
-    void dispatchLifecycle(AppInstance &instance,
-                           AppState::State state);
-
-    AppInstance *findInstance(quint64 instanceId);
-    const AppInstance *findInstance(quint64 instanceId) const;
+    void changeState(AppInstance &instance,
+                     AppState::State state);
 
     int findTask(const QString &appId) const;
 
-private:
+    int findBackground(const QString &appId) const;
 
+    AppInstance *findInstance(quint64 instanceId);
+
+private:
     AppRegistry *m_registry = nullptr;
 
-    // 前台任务栈
     QVector<AppInstance> m_stack;
 
-    // keepAlive 后台缓存
-    QHash<QString, AppInstance> m_backgroundApps;
+    QVector<AppInstance> m_backgroundCache;
 
     quint64 m_nextInstanceId = 1;
 };

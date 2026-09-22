@@ -40,7 +40,7 @@ BasePage {
             text: "Open Media"
 
             onClicked: {
-                PageManager.launchApp("media")
+                PageManager.launch("media")
             }
         }
 
@@ -48,7 +48,7 @@ BasePage {
             text: "Open Settings"
 
             onClicked: {
-                PageManager.launchApp("settings")
+                PageManager.launch("settings")
             }
         }
     }

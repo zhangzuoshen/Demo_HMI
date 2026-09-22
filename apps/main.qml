@@ -83,8 +83,23 @@ Window {
             anchors.centerIn: parent
             spacing: 2
 
+            // ===== 实时时钟，显示到秒 =====
             Text {
-                text: "App : " + PageManager.currentAppId
+                id: clockText
+                text: Qt.formatDateTime(new Date(), "hh:mm:ss.zzz")
+                color: "white"
+                font.pixelSize: 14
+
+                Timer {
+                    interval: 200
+                    repeat: true
+                    running: true
+                    onTriggered: clockText.text = Qt.formatDateTime(new Date(), "hh:mm:ss.zzz")
+                }
+            }
+
+            Text {
+                text: "App : " + PageManager.currentAppId + " #" + PageManager.currentInstanceId
                 color: "white"
                 font.pixelSize: 14
             }

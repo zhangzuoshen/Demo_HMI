@@ -2,11 +2,13 @@
 
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickWindow>
 
 #include "Log.h"
 #include "PageManager.h"
 #include "SceneContainer.h"
 #include "WindowState.h"
+#include "AppState.h"
 
 bool ApplicationBootstrap::initialize(
         QQmlApplicationEngine &engine,
@@ -20,9 +22,9 @@ bool ApplicationBootstrap::initialize(
     //==============================
     qmlRegisterUncreatableMetaObject(
                 WindowState::staticMetaObject,
-                "HMI.Core",     // QML模块
+                "HMI.Core",
                 1, 0,
-                "WindowState",  // QML类型名
+                "WindowState",
                 "WindowState is an enum only");
 
     qmlRegisterUncreatableMetaObject(
@@ -42,15 +44,37 @@ bool ApplicationBootstrap::initialize(
                 "PageManager",
                 &pageManager);
 
+    //==============================
+    // 加载主界面
+    //==============================
     engine.load(QUrl("qrc:/apps/main.qml"));
 
-    if(engine.rootObjects().isEmpty())
+    if (engine.rootObjects().isEmpty())
     {
         qCCritical(logBootstrap)
                 << "Failed to load main.qml";
-
-        return -1;
+        return false;
     }
 
-    return !engine.rootObjects().isEmpty();
+    //==============================
+    // Qt 5.12：绑定 QQmlIncubationController
+    //==============================
+    QQuickWindow *window =
+            qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+
+    if (window)
+    {
+        engine.setIncubationController(
+                    window->incubationController());
+
+        qCInfo(logBootstrap)
+                << "QQmlIncubationController attached.";
+    }
+    else
+    {
+        qCWarning(logBootstrap)
+                << "Root object is not QQuickWindow.";
+    }
+
+    return true;
 }

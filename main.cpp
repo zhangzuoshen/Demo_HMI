@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     // 放在 Main.qml 加载完成之后，
     // 保证 SceneContainer 已连接信号。
     //==============================
-    pageManager.launchApp("home");
+    pageManager.launch("home");
 
     qCInfo(logMain)
             << "HMI initialized successfully.";
