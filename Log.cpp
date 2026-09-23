@@ -4,12 +4,12 @@
 #include <QDebug>
 
 // 分类定义
-Q_LOGGING_CATEGORY(logMain,"MAIN")
-Q_LOGGING_CATEGORY(logBootstrap,"Bootstrap")
-Q_LOGGING_CATEGORY(logPageManager,"PageManager")
-Q_LOGGING_CATEGORY(logScene,"Scene")
-Q_LOGGING_CATEGORY(logRegistry,"AppRegistry")
-Q_LOGGING_CATEGORY(logQml,"QML")
+Q_LOGGING_CATEGORY(logMain, "MAIN")
+Q_LOGGING_CATEGORY(logBootstrap, "Bootstrap")
+Q_LOGGING_CATEGORY(logPageManager, "PageManager")
+Q_LOGGING_CATEGORY(logScene, "Scene")
+Q_LOGGING_CATEGORY(logRegistry, "AppRegistry")
+Q_LOGGING_CATEGORY(logQml, "QML")
 
 static void messageHandler(QtMsgType type,
                            const QMessageLogContext &ctx,
@@ -17,14 +17,13 @@ static void messageHandler(QtMsgType type,
 {
     QString level;
 
-
-    switch(type)
+    switch (type)
     {
-    case QtDebugMsg:    level="DEBUG"; break;
-    case QtInfoMsg:     level="INFO "; break;
-    case QtWarningMsg:  level="WARN "; break;
-    case QtCriticalMsg: level="ERROR"; break;
-    case QtFatalMsg:    level="FATAL"; break;
+    case QtDebugMsg:    level = "DEBUG"; break;
+    case QtInfoMsg:     level = "INFO "; break;
+    case QtWarningMsg:  level = "WARN "; break;
+    case QtCriticalMsg: level = "ERROR"; break;
+    case QtFatalMsg:    level = "FATAL"; break;
     }
 
     QString category = ctx.category;
@@ -42,7 +41,7 @@ static void messageHandler(QtMsgType type,
 
     fflush(stdout);
 
-    if(type==QtFatalMsg)
+    if (type == QtFatalMsg)
         abort();
 }
 

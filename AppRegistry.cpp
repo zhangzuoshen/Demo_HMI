@@ -27,13 +27,13 @@ bool AppRegistry::loadApps(const QString &resourceRoot)
                 QDir::Dirs |
                 QDir::NoDotAndDotDot);
 
-    foreach(const QFileInfo &dir, dirs)
+    foreach (const QFileInfo &dir, dirs)
     {
         QString manifest =
                 dir.absoluteFilePath()
                 + "/manifest.json";
 
-        if(!QFile::exists(manifest))
+        if (!QFile::exists(manifest))
         {
             qCDebug(logRegistry)
                     << "Skip (no manifest):"
@@ -56,7 +56,7 @@ bool AppRegistry::loadManifest(const QString &appDir)
 {
     QFile file(appDir + "/manifest.json");
 
-    if(!file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly))
     {
         qCWarning(logRegistry)
                 << "Cannot open:"
@@ -68,7 +68,7 @@ bool AppRegistry::loadManifest(const QString &appDir)
     QJsonDocument doc =
             QJsonDocument::fromJson(file.readAll());
 
-    if(!doc.isObject())
+    if (!doc.isObject())
     {
         qCWarning(logRegistry)
                 << "Invalid manifest:"
@@ -98,7 +98,7 @@ bool AppRegistry::loadManifest(const QString &appDir)
 
     info.basePath = appDir;
 
-    if(info.appId.isEmpty())
+    if (info.appId.isEmpty())
     {
         qCWarning(logRegistry)
                 << "Missing appId:"
@@ -125,10 +125,10 @@ bool AppRegistry::loadManifest(const QString &appDir)
 AppInfo::LaunchMode AppRegistry::parseLaunchMode(
         const QString &mode) const
 {
-    if(mode=="singleTop")
+    if (mode == "singleTop")
         return AppInfo::SingleTop;
 
-    if(mode=="singleTask")
+    if (mode == "singleTask")
         return AppInfo::SingleTask;
 
     return AppInfo::Standard;

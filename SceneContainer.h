@@ -11,7 +11,7 @@ class PageView;
 class SceneContainer : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(QObject* pageManager READ pageManager WRITE setPageManager)
+    Q_PROPERTY(QObject *pageManager READ pageManager WRITE setPageManager)
 
 public:
     explicit SceneContainer(QQuickItem *parent = nullptr);
@@ -37,7 +37,7 @@ private:
 private:
     QObject *m_pageManager = nullptr;
 
-    QHash<quint64, PageView*> m_cachedViews;
+    QHash<quint64, PageView *> m_cachedViews;
 
     PageView *m_frontView = nullptr;
 

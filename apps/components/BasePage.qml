@@ -19,8 +19,8 @@ Item {
     //==============================
     // 内部状态
     //==============================
-    property string _cachedName:""
-    property int _cachedInstance:0
+    property string _cachedName: ""
+    property int _cachedInstance: 0
     property int lastState:AppState.None
 
     //==============================

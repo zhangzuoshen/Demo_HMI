@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     //==============================
     AppRegistry registry;
 
-    if(!registry.loadApps(":/apps"))
+    if (!registry.loadApps(":/apps"))
     {
         qCCritical(logMain)
                 << "No application found.";
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     //==============================
     QQmlApplicationEngine engine;
 
-    if(!ApplicationBootstrap::initialize(
+    if (!ApplicationBootstrap::initialize(
                 engine,
                 registry,
                 pageManager))

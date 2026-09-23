@@ -1,0 +1,15 @@
+# Demo_HMI 统一编辑器配置
+# C++ 格式细节由 .clang-format 管；本文件管所有文件的基础规范（QML 尤其依赖它）
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.md]
+# Markdown 行尾双空格是换行语法，不做裁剪
+trim_trailing_whitespace = false
