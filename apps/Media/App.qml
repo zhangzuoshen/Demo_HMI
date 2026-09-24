@@ -8,10 +8,22 @@ BasePage {
     // 生命周期
     //==============================
     onPageCreate: {console.log("[Media] Create")}
-    onPageReady: {console.log("[Media] Ready")}
-    onPageEnter: {console.log("[Media] Enter")}
-    onPagePause: {console.log("[Media] Pause")}
-    onPageResume: {console.log("[Media] Resume")}
+    onPageReady: {
+        var args = AppContext.takeLaunchArgs()
+        console.log("[Media] Ready:", args.times)
+    }
+    onPageEnter: {
+        var args = AppContext.takeLaunchArgs()
+        console.log("[Media] Enter:", args.times)
+    }
+    onPagePause:{
+        var args = AppContext.takeLaunchArgs()
+        console.log("[Media] Pause:", args.times)
+    }
+    onPageResume: {
+        var args = AppContext.takeLaunchArgs()
+        console.log("[Media] Resume:", args.times)
+    }
     onPageDestroy: {console.log("[Media] Destroy")}
 
     Column {

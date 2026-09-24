@@ -2,6 +2,7 @@
 #define APPCONTEXT_H
 
 #include <QObject>
+#include <QVariantMap>
 #include "AppState.h"
 #include "WindowState.h"
 
@@ -37,6 +38,10 @@ public:
     void setState(AppState::State state);
     void setWindowState(WindowState::State state);
 
+    Q_INVOKABLE QVariantMap takeLaunchArgs() const;
+    void setLaunchArgs(const QVariantMap &args);
+    void clearLaunchArgs();
+
 signals:
     void appIdChanged();
     void appNameChanged();
@@ -48,6 +53,7 @@ private:
     QString m_appId;
     QString m_appName;
     quint64 m_instanceId = 0;
+    QVariantMap m_launchArgs;
 
     AppState::State m_state = AppState::Created;
     WindowState::State m_windowState = WindowState::Detached;

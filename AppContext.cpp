@@ -74,3 +74,18 @@ void AppContext::setWindowState(WindowState::State state)
     m_windowState = state;
     emit windowStateChanged();
 }
+
+QVariantMap AppContext::takeLaunchArgs() const
+{
+    return m_launchArgs;
+}
+
+void AppContext::setLaunchArgs(const QVariantMap &args)
+{
+    m_launchArgs = args;
+}
+
+void AppContext::clearLaunchArgs()
+{
+    m_launchArgs.clear();
+}

@@ -40,7 +40,9 @@ BasePage {
             text: "Open Media"
 
             onClicked: {
-                PageManager.launch("media")
+                var t = new Date().toTimeString()
+                PageManager.launch("media", {times: t})
+                console.log("times:", t)
             }
         }
 

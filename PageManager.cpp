@@ -30,7 +30,7 @@ bool PageManager::canGoBack() const
     return m_stack.size() > 1;
 }
 
-void PageManager::launch(const QString &appId)
+void PageManager::launch(const QString &appId, const QVariantMap &args)
 {
     qCInfo(logPageManager) << "Launch request:" << appId;
 
@@ -78,6 +78,7 @@ void PageManager::launch(const QString &appId)
 
             AppInstance &top = m_stack.last();
 
+            top.context->setLaunchArgs(args);
             changeState(top, AppState::Foreground);
             emit sceneAttached(top.instanceId);
             emit currentChanged();
@@ -99,7 +100,9 @@ void PageManager::launch(const QString &appId)
 
             m_stack.append(instance);
 
-            changeState(m_stack.last(), AppState::Foreground);
+            AppInstance &top = m_stack.last();
+            top.context->setLaunchArgs(args);
+            changeState(top, AppState::Foreground);
             emit sceneAttached(instance.instanceId);
             emit currentChanged();
 
@@ -112,7 +115,7 @@ void PageManager::launch(const QString &appId)
         if (!m_stack.isEmpty())
             changeState(m_stack.last(), AppState::Background);
 
-        m_stack.append(createInstance(target));
+        m_stack.append(createInstance(target, args));
         emit sceneCreated(m_stack.last());
         emit currentChanged();
 
@@ -130,7 +133,7 @@ void PageManager::launch(const QString &appId)
         if (!m_stack.isEmpty())
             changeState(m_stack.last(), AppState::Background);
 
-        m_stack.append(createInstance(target));
+        m_stack.append(createInstance(target, args));
         emit sceneCreated(m_stack.last());
         emit currentChanged();
 
@@ -143,7 +146,7 @@ void PageManager::launch(const QString &appId)
         if (!m_stack.isEmpty())
             changeState(m_stack.last(), AppState::Background);
 
-        m_stack.append(createInstance(target));
+        m_stack.append(createInstance(target, args));
         emit sceneCreated(m_stack.last());
         emit currentChanged();
 
@@ -158,19 +161,14 @@ void PageManager::back()
         return;
 
     AppInstance dead = m_stack.takeLast();
-
     changeState(dead, AppState::Destroyed);
-
     emit sceneDestroyed(dead.instanceId);
-
     delete dead.context;
 
     AppInstance &next = m_stack.last();
 
     changeState(next, AppState::Foreground);
-
     emit sceneAttached(next.instanceId);
-
     emit currentChanged();
 }
 
@@ -195,7 +193,8 @@ void PageManager::pageReady(quint64 instanceId)
         changeState(*instance, AppState::Foreground);
 }
 
-AppInstance PageManager::createInstance(const AppInfo &info)
+AppInstance PageManager::createInstance(const AppInfo &info,
+                                        const QVariantMap &args)
 {
     AppInstance instance;
 
@@ -208,7 +207,9 @@ AppInstance PageManager::createInstance(const AppInfo &info)
     instance.context->setAppId(info.appId);
     instance.context->setAppName(info.name);
     instance.context->setInstanceId(instance.instanceId);
-    instance.context->setState(instance.state);
+    instance.context->setLaunchArgs(args);
+    instance.context->setState(AppState::Created);
+    instance.context->setWindowState(WindowState::Creating);
 
     return instance;
 }
@@ -221,7 +222,14 @@ void PageManager::changeState(AppInstance &instance, AppState::State state)
     instance.state = state;
 
     if (instance.context)
+    {
+        if (state != AppState::Ready && state != AppState::Foreground)
+        {
+            instance.context->clearLaunchArgs();
+        }
+
         instance.context->setState(state);
+    }
 
     qCInfo(logPageManager) << "[" << instance.instanceId << "]"
                            << "\"" << instance.info.appId << "\""

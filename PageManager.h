@@ -23,7 +23,8 @@ class PageManager : public QObject
 public:
     explicit PageManager(AppRegistry *registry, QObject *parent = nullptr);
 
-    Q_INVOKABLE void launch(const QString &appId);
+    Q_INVOKABLE void launch(const QString &appId,
+                            const QVariantMap &args = QVariantMap());
 
     Q_INVOKABLE void back();
 
@@ -48,7 +49,7 @@ signals:
     void currentChanged();
 
 private:
-    AppInstance createInstance(const AppInfo &info);
+    AppInstance createInstance(const AppInfo &info, const QVariantMap &args);
 
     void changeState(AppInstance &instance, AppState::State state);
 
