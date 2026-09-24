@@ -11,32 +11,26 @@ Q_LOGGING_CATEGORY(logScene, "Scene")
 Q_LOGGING_CATEGORY(logRegistry, "AppRegistry")
 Q_LOGGING_CATEGORY(logQml, "QML")
 
-static void messageHandler(QtMsgType type,
-                           const QMessageLogContext &ctx,
+static void messageHandler(QtMsgType type, const QMessageLogContext &ctx,
                            const QString &msg)
 {
     QString level;
 
     switch (type)
     {
-    case QtDebugMsg:    level = "DEBUG"; break;
-    case QtInfoMsg:     level = "INFO "; break;
-    case QtWarningMsg:  level = "WARN "; break;
+    case QtDebugMsg: level = "DEBUG"; break;
+    case QtInfoMsg: level = "INFO "; break;
+    case QtWarningMsg: level = "WARN "; break;
     case QtCriticalMsg: level = "ERROR"; break;
-    case QtFatalMsg:    level = "FATAL"; break;
+    case QtFatalMsg: level = "FATAL"; break;
     }
 
     QString category = ctx.category;
 
-    QString time =
-        QDateTime::currentDateTime()
-        .toString("hh:mm:ss.zzz");
+    QString time = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
 
-    fprintf(stdout,
-            "[%s][%s][%s] %s\n",
-            time.toUtf8().constData(),
-            level.toUtf8().constData(),
-            category.toUtf8().constData(),
+    fprintf(stdout, "[%s][%s][%s] %s\n", time.toUtf8().constData(),
+            level.toUtf8().constData(), category.toUtf8().constData(),
             msg.toUtf8().constData());
 
     fflush(stdout);

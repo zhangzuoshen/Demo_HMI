@@ -9,25 +9,16 @@ class AppContext : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString appId
-               READ appId
-               NOTIFY appIdChanged)
+    Q_PROPERTY(QString appId READ appId NOTIFY appIdChanged)
 
-    Q_PROPERTY(QString appName
-               READ appName
-               NOTIFY appNameChanged)
+    Q_PROPERTY(QString appName READ appName NOTIFY appNameChanged)
 
-    Q_PROPERTY(quint64 instanceId
-               READ instanceId
-               NOTIFY instanceIdChanged)
+    Q_PROPERTY(quint64 instanceId READ instanceId NOTIFY instanceIdChanged)
 
-    Q_PROPERTY(AppState::State state
-               READ state
-               NOTIFY stateChanged)
+    Q_PROPERTY(AppState::State state READ state NOTIFY stateChanged)
 
-    Q_PROPERTY(WindowState::State windowState
-               READ windowState
-               NOTIFY windowStateChanged)
+    Q_PROPERTY(WindowState::State windowState READ windowState NOTIFY
+                   windowStateChanged)
 
 public:
     explicit AppContext(QObject *parent = nullptr);

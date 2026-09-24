@@ -8,12 +8,8 @@ class AppRegistry;
 class ApplicationBootstrap
 {
 public:
-
-    static bool initialize(
-            QQmlApplicationEngine &engine,
-            AppRegistry &registry,
-            PageManager &pageManager);
-
+    static bool initialize(QQmlApplicationEngine &engine, AppRegistry &registry,
+                           PageManager &pageManager);
 };
 
 #endif

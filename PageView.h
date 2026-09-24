@@ -17,8 +17,7 @@ class PageView : public QObject
     Q_OBJECT
 
 public:
-    explicit PageView(QQmlEngine *engine,
-                      QObject *parent = nullptr);
+    explicit PageView(QQmlEngine *engine, QObject *parent = nullptr);
     ~PageView() override;
 
     bool create(const AppInstance &instance);

@@ -40,29 +40,21 @@ public:
     {
         switch (state)
         {
-        case None:
-            return QStringLiteral("AppState::None");
+        case None: return QStringLiteral("AppState::None");
 
-        case Created:
-            return QStringLiteral("AppState::Created");
+        case Created: return QStringLiteral("AppState::Created");
 
-        case Ready:
-            return QStringLiteral("AppState::Ready");
+        case Ready: return QStringLiteral("AppState::Ready");
 
-        case Foreground:
-            return QStringLiteral("AppState::Foreground");
+        case Foreground: return QStringLiteral("AppState::Foreground");
 
-        case Background:
-            return QStringLiteral("AppState::Background");
+        case Background: return QStringLiteral("AppState::Background");
 
-        case Covered:
-            return QStringLiteral("AppState::Covered");
+        case Covered: return QStringLiteral("AppState::Covered");
 
-        case Suspended:
-            return QStringLiteral("AppState::Suspended");
+        case Suspended: return QStringLiteral("AppState::Suspended");
 
-        case Destroyed:
-            return QStringLiteral("AppState::Destroyed");
+        case Destroyed: return QStringLiteral("AppState::Destroyed");
         }
 
         return QStringLiteral("AppState::Unknown");

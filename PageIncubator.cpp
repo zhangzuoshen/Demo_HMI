@@ -15,15 +15,16 @@ void PageIncubator::statusChanged(Status status)
 
     switch (status)
     {
-    case Ready:
-        m_view->onIncubationReady();
-        break;
-
-    case Error:
-        m_view->onIncubationError(errors());
-        break;
-
-    default:
-        break;
+    case Ready: m_view->onIncubationReady(); break;
+    case Error: m_view->onIncubationError(errors()); break;
+    default: break;
     }
+}
+
+void PageIncubator::setInitialState(QObject *object)
+{
+    if (!m_view)
+        return;
+
+    object->setParent(m_view); // 生命周期交给 PageView
 }

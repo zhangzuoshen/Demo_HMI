@@ -29,14 +29,15 @@ PointerAlignment: Right
 DerivePointerAlignment: false
 
 # --- 行宽 ---
-ColumnLimit: 100
+ColumnLimit: 80
+
 
 # --- include：保持手工排序（项目头 "" 在前，Qt 头 <> 在后）---
 SortIncludes: false
 
 # --- 构造函数初始化列表：冒号前换行、禁止合并回签名行 ---
-BreakConstructorInitializers: BeforeColon
-PackConstructorInitializers: Never
+BreakConstructorInitializers: BeforeComma
+## PackConstructorInitializers: Never
 
 # --- Qt 宏 ---
 ForEachMacros:
@@ -54,3 +55,6 @@ AlignOperands: true
 MaxEmptyLinesToKeep: 1
 KeepEmptyLinesAtTheStartOfBlocks: false
 FixNamespaceComments: false
+
+# --- 让二元逻辑运算符（||、&&）出现在换行之后，也就是运算符位于行首
+BreakBeforeBinaryOperators: NonAssignment

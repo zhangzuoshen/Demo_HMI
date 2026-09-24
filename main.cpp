@@ -32,8 +32,7 @@ int main(int argc, char *argv[])
     //==============================
     initLogSystem();
 
-    qCInfo(logMain)
-            << "Application started";
+    qCInfo(logMain) << "Application started";
 
     //==============================
     // App Registry
@@ -42,8 +41,7 @@ int main(int argc, char *argv[])
 
     if (!registry.loadApps(":/apps"))
     {
-        qCCritical(logMain)
-                << "No application found.";
+        qCCritical(logMain) << "No application found.";
 
         return -1;
     }
@@ -58,13 +56,9 @@ int main(int argc, char *argv[])
     //==============================
     QQmlApplicationEngine engine;
 
-    if (!ApplicationBootstrap::initialize(
-                engine,
-                registry,
-                pageManager))
+    if (!ApplicationBootstrap::initialize(engine, registry, pageManager))
     {
-        qCCritical(logMain)
-                << "Failed to load Main.qml";
+        qCCritical(logMain) << "Failed to load Main.qml";
 
         return -1;
     }
@@ -76,8 +70,7 @@ int main(int argc, char *argv[])
     //==============================
     pageManager.launch("home");
 
-    qCInfo(logMain)
-            << "HMI initialized successfully.";
+    qCInfo(logMain) << "HMI initialized successfully.";
 
     return app.exec();
 }

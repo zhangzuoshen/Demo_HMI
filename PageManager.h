@@ -13,21 +13,15 @@ class PageManager : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString currentAppId
-               READ currentAppId
-               NOTIFY currentChanged)
+    Q_PROPERTY(QString currentAppId READ currentAppId NOTIFY currentChanged)
 
-    Q_PROPERTY(quint64 currentInstanceId
-               READ currentInstanceId
-               NOTIFY currentChanged)
+    Q_PROPERTY(
+        quint64 currentInstanceId READ currentInstanceId NOTIFY currentChanged)
 
-    Q_PROPERTY(bool canGoBack
-               READ canGoBack
-               NOTIFY currentChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY currentChanged)
 
 public:
-    explicit PageManager(AppRegistry *registry,
-                         QObject *parent = nullptr);
+    explicit PageManager(AppRegistry *registry, QObject *parent = nullptr);
 
     Q_INVOKABLE void launch(const QString &appId);
 
@@ -56,8 +50,7 @@ signals:
 private:
     AppInstance createInstance(const AppInfo &info);
 
-    void changeState(AppInstance &instance,
-                     AppState::State state);
+    void changeState(AppInstance &instance, AppState::State state);
 
     int findTask(const QString &appId) const;
 

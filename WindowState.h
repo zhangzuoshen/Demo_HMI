@@ -35,11 +35,11 @@ public:
     {
         switch (state)
         {
-        case Detached:   return QStringLiteral("Detached");
-        case Creating:   return QStringLiteral("Creating");
-        case Ready:      return QStringLiteral("Ready");
-        case Attached:   return QStringLiteral("Attached");
-        case Visible:    return QStringLiteral("Visible");
+        case Detached: return QStringLiteral("Detached");
+        case Creating: return QStringLiteral("Creating");
+        case Ready: return QStringLiteral("Ready");
+        case Attached: return QStringLiteral("Attached");
+        case Visible: return QStringLiteral("Visible");
         case Transition: return QStringLiteral("Transition");
         }
 
@@ -49,18 +49,14 @@ public:
     // 是否已经加入窗口树
     static bool isAttached(State state)
     {
-        return state == Attached ||
-               state == Visible ||
-               state == Transition;
+        return state == Attached || state == Visible || state == Transition;
     }
 
     // 是否已经完成 QML 创建
     static bool isReady(State state)
     {
-        return state == Ready ||
-               state == Attached ||
-               state == Visible ||
-               state == Transition;
+        return state == Ready || state == Attached || state == Visible
+               || state == Transition;
     }
 
     // 是否仍然存活（包括后台缓存）

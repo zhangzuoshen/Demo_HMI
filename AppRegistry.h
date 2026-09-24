@@ -32,7 +32,6 @@ class AppRegistry : public QObject
     Q_OBJECT
 
 public:
-
     explicit AppRegistry(QObject *parent = nullptr);
 
     bool loadApps(const QString &resourceRoot);
@@ -44,13 +43,11 @@ public:
     QList<AppInfo> apps() const;
 
 private:
-
     bool loadManifest(const QString &appDir);
 
     AppInfo::LaunchMode parseLaunchMode(const QString &mode) const;
 
 private:
-
     QMap<QString, AppInfo> m_apps;
 };
 

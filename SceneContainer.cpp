@@ -31,17 +31,17 @@ void SceneContainer::setPageManager(QObject *manager)
     if (!pm)
         return;
 
-    connect(pm, &PageManager::sceneCreated,
-            this, &SceneContainer::onSceneCreated);
+    connect(pm, &PageManager::sceneCreated, this,
+            &SceneContainer::onSceneCreated);
 
-    connect(pm, &PageManager::sceneAttached,
-            this, &SceneContainer::onSceneAttached);
+    connect(pm, &PageManager::sceneAttached, this,
+            &SceneContainer::onSceneAttached);
 
-    connect(pm, &PageManager::sceneDetached,
-            this, &SceneContainer::onSceneDetached);
+    connect(pm, &PageManager::sceneDetached, this,
+            &SceneContainer::onSceneDetached);
 
-    connect(pm, &PageManager::sceneDestroyed,
-            this, &SceneContainer::onSceneDestroyed);
+    connect(pm, &PageManager::sceneDestroyed, this,
+            &SceneContainer::onSceneDestroyed);
 }
 
 QObject *SceneContainer::pageManager() const
@@ -59,26 +59,18 @@ PageView *SceneContainer::createView(const AppInstance &instance)
     if (auto cached = findView(instance.instanceId))
         return cached;
 
-    PageView *view =
-            new PageView(qmlEngine(this), this);
+    PageView *view = new PageView(qmlEngine(this), this);
 
     m_cachedViews.insert(instance.instanceId, view);
 
-    connect(view,
-            &PageView::incubationReady,
-            this,
-            [this](quint64 id)
-    {
+    connect(view, &PageView::incubationReady, this, [this](quint64 id) {
         PageView *readyView = findView(id);
 
         if (!readyView)
             return;
 
-        qCInfo(logScene)
-                << "Incubation Ready:"
-                << readyView->instance().info.appId
-                << "#"
-                << id;
+        qCInfo(logScene) << "Incubation Ready:"
+                         << readyView->instance().info.appId << "#" << id;
 
         // 同步窗口尺寸
         readyView->resize(QSizeF(width(), height()));
@@ -88,11 +80,8 @@ PageView *SceneContainer::createView(const AppInstance &instance)
         //========================================================
         if (id != m_pendingFrontId)
         {
-            qCInfo(logScene)
-                    << "Background incubation finished:"
-                    << readyView->instance().info.appId
-                    << "#"
-                    << id;
+            qCInfo(logScene) << "Background incubation finished:"
+                             << readyView->instance().info.appId << "#" << id;
 
             return;
         }
@@ -102,9 +91,7 @@ PageView *SceneContainer::createView(const AppInstance &instance)
         //========================================================
         if (m_frontView == readyView && readyView->isAttached())
         {
-            qCDebug(logScene)
-                    << "Already attached:"
-                    << id;
+            qCDebug(logScene) << "Already attached:" << id;
             return;
         }
 
@@ -127,14 +114,8 @@ PageView *SceneContainer::createView(const AppInstance &instance)
             pm->pageReady(id);
     });
 
-    connect(view,
-            &PageView::incubationFailed,
-            this,
-            [this](quint64 id)
-    {
-        qCWarning(logScene)
-                << "Incubation Failed:"
-                << id;
+    connect(view, &PageView::incubationFailed, this, [this](quint64 id) {
+        qCWarning(logScene) << "Incubation Failed:" << id;
 
         PageView *failed = findView(id);
 
@@ -152,11 +133,8 @@ PageView *SceneContainer::createView(const AppInstance &instance)
         return nullptr;
     }
 
-    qCInfo(logScene)
-            << "Create:"
-            << instance.info.appId
-            << "#"
-            << instance.instanceId;
+    qCInfo(logScene) << "Create:" << instance.info.appId << "#"
+                     << instance.instanceId;
 
     return view;
 }
@@ -176,14 +154,10 @@ void SceneContainer::onSceneCreated(const AppInstance &instance)
     }
 
     // KeepAlive 页面恢复
-    qCInfo(logScene)
-            << "Attach:"
-            << instance.info.appId
-            << "#"
-            << instance.instanceId;
+    qCInfo(logScene) << "Attach:" << instance.info.appId << "#"
+                     << instance.instanceId;
 
-    if (m_frontView &&
-        m_frontView != view)
+    if (m_frontView && m_frontView != view)
     {
         m_frontView->detach();
     }
@@ -203,17 +177,12 @@ void SceneContainer::onSceneAttached(quint64 instanceId)
 
     if (!view)
     {
-        qCWarning(logScene)
-                << "Attach failed: view not found:"
-                << instanceId;
+        qCWarning(logScene) << "Attach failed: view not found:" << instanceId;
         return;
     }
 
-    qCInfo(logScene)
-            << "Attach:"
-            << view->instance().info.appId
-            << "#"
-            << instanceId;
+    qCInfo(logScene) << "Attach:" << view->instance().info.appId << "#"
+                     << instanceId;
 
     // 切换前台窗口
     if (m_frontView && m_frontView != view)
@@ -224,12 +193,9 @@ void SceneContainer::onSceneAttached(quint64 instanceId)
     // ★ 页面还没孵化完成
     if (!view->isReady())
     {
-        qCInfo(logScene)
-                << "Wait incubation:"
-                << instanceId;
+        qCInfo(logScene) << "Wait incubation:" << instanceId;
         return;
     }
-
 
     // 同步窗口尺寸
     m_frontView->resize(QSizeF(width(), height()));
@@ -245,11 +211,8 @@ void SceneContainer::onSceneDetached(quint64 instanceId)
     if (!view)
         return;
 
-    qCInfo(logScene)
-            << "Detach:"
-            << view->instance().info.appId
-            << "#"
-            << instanceId;
+    qCInfo(logScene) << "Detach:" << view->instance().info.appId << "#"
+                     << instanceId;
 
     view->detach();
 
@@ -264,11 +227,8 @@ void SceneContainer::onSceneDestroyed(quint64 instanceId)
     if (!view)
         return;
 
-    qCInfo(logScene)
-            << "Destroy:"
-            << view->instance().info.appId
-            << "#"
-            << instanceId;
+    qCInfo(logScene) << "Destroy:" << view->instance().info.appId << "#"
+                     << instanceId;
 
     if (m_frontView == view)
         m_frontView = nullptr;
