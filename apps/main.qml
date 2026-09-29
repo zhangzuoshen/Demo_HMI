@@ -24,20 +24,12 @@ Window {
     //==============================
     Item {
         anchors.fill: parent
-        focus: true
+
         //==============================
-        // 全局返回键
+        // 返回键由 C++ 的 NavigationFilter 统一处理
         //==============================
-        Keys.onReleased: {
-            switch(event.key)
-            {
-            case Qt.Key_Back:
-            case Qt.Key_Escape:
-                PageManager.back()
-                event.accepted = true
-                break
-            }
-        }
+        // 原先挂在这里的 Keys.onReleased 依赖焦点树：弹窗抢焦点后
+        // 按键不再经过本层，会导致弹窗开着时把页面 back 掉。
 
         SceneContainer {
             id: appScene

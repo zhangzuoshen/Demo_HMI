@@ -5,6 +5,7 @@
 #include <QQuickWindow>
 
 #include "Log.h"
+#include "NavigationFilter.h"
 #include "PageManager.h"
 #include "SceneContainer.h"
 #include "WindowState.h"
@@ -52,6 +53,17 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
         engine.setIncubationController(window->incubationController());
 
         qCInfo(logBootstrap) << "QQmlIncubationController attached.";
+
+        //==============================
+        // 返回键路由
+        //==============================
+        // 不挂在 QML 的 Keys handler 上：那种写法依赖焦点树，
+        // 弹窗抢焦点后按键就不再经过页面那一层，会误触发页面返回。
+        auto *filter = new NavigationFilter(&pageManager, window);
+
+        window->installEventFilter(filter);
+
+        qCInfo(logBootstrap) << "Navigation filter installed.";
     }
     else
     {

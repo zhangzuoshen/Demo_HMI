@@ -27,6 +27,7 @@ qt_add_executable(Demo_HMI
     AppState.h
     ApplicationBootstrap.h  ApplicationBootstrap.cpp
     Log.h                   Log.cpp
+    NavigationFilter.h      NavigationFilter.cpp
     PageIncubator.h         PageIncubator.cpp
     PageManager.h           PageManager.cpp
     PageView.h              PageView.cpp
