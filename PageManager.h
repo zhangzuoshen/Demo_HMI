@@ -22,6 +22,7 @@ class PageManager : public QObject
 
 public:
     explicit PageManager(AppRegistry *registry, QObject *parent = nullptr);
+    ~PageManager() override;
 
     Q_INVOKABLE void launch(const QString &appId,
                             const QVariantMap &args = QVariantMap());

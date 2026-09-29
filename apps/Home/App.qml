@@ -31,7 +31,8 @@ BasePage {
         }
 
         Text {
-            text: "Instance #" + AppContext.instanceId
+            text: "Instance #"
+                   + (AppContext ? AppContext.instanceId : 0)
             color: "#DDDDDD"
             font.pixelSize: 16
         }

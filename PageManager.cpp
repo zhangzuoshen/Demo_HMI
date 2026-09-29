@@ -9,6 +9,21 @@ PageManager::PageManager(AppRegistry *registry, QObject *parent)
     qCInfo(logPageManager) << "PageManager created";
 }
 
+PageManager::~PageManager()
+{
+    qCInfo(logPageManager) << "PageManager destroyed";
+
+    // 栈内与后台缓存中未被销毁的 AppContext 在此统一释放
+    for (const AppInstance &instance : m_stack)
+        delete instance.context;
+
+    for (const AppInstance &instance : m_backgroundCache)
+        delete instance.context;
+
+    m_stack.clear();
+    m_backgroundCache.clear();
+}
+
 QString PageManager::currentAppId() const
 {
     if (m_stack.isEmpty())
@@ -73,7 +88,7 @@ void PageManager::launch(const QString &appId, const QVariantMap &args)
                 // keepAlive=false：销毁
                 changeState(dead, AppState::Destroyed);
                 emit sceneDestroyed(dead.instanceId);
-                delete dead.context;
+                dead.context->deleteLater();
             }
 
             AppInstance &top = m_stack.last();
@@ -163,7 +178,7 @@ void PageManager::back()
     AppInstance dead = m_stack.takeLast();
     changeState(dead, AppState::Destroyed);
     emit sceneDestroyed(dead.instanceId);
-    delete dead.context;
+    dead.context->deleteLater();
 
     AppInstance &next = m_stack.last();
 
