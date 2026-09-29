@@ -32,7 +32,7 @@ bool PageView::create(const AppInstance &instance)
 
     m_context = new QQmlContext(m_engine->rootContext(), this);
 
-    m_context->setContextProperty("AppContext", instance.context);
+    m_context->setContextProperty("AppContext", instance.context.data());
 
     QString path = instance.info.basePath;
     path.replace(":/", "qrc:/");
@@ -176,10 +176,27 @@ void PageView::onIncubationReady()
 
     QObject *obj = m_incubator->object();
     QQuickItem *rootItem = qobject_cast<QQuickItem *>(obj);
+
     if (!rootItem)
+    {
+        // 所有权已从 incubator 移交给 PageView，必须自行释放；
+        // 同时上报失败，让 SceneContainer 把该 PageView 移出缓存
+        if (obj)
+            obj->deleteLater();
+        emit incubationFailed(m_instance.instanceId);
         return;
+    }
 
     m_rootItem = rootItem;
+
+    //==============================
+    // 所有权移交：AppContext 挂到 QML 根对象下
+    //==============================
+    // 根对象析构时会带走其子对象，两者生命周期从此同步，
+    // QML 绑定不会再看到 AppContext 变成 null。
+    if (m_instance.context)
+        m_instance.context->setParent(m_rootItem);
+
     m_ready = true;
     setWindowState(WindowState::Ready);
     emit incubationReady(m_instance.instanceId);

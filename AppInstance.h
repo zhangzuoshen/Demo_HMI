@@ -1,6 +1,7 @@
 #ifndef APPINSTANCE_H
 #define APPINSTANCE_H
 
+#include <QPointer>
 #include <QtGlobal>
 
 #include "AppRegistry.h"
@@ -28,8 +29,10 @@ struct AppInstance
 
     AppState::State state = AppState::None;
 
-    // 每个实例独立拥有
-    AppContext *context = nullptr;
+    // 每个实例独立拥有。
+    // AppInstance 按值拷贝、多处持有，故用 QPointer：
+    // AppContext 一旦销毁，所有副本自动置空，不会留下悬空指针。
+    QPointer<AppContext> context;
 };
 
 #endif // APPINSTANCE_H

@@ -13,12 +13,19 @@ PageManager::~PageManager()
 {
     qCInfo(logPageManager) << "PageManager destroyed";
 
-    // 栈内与后台缓存中未被销毁的 AppContext 在此统一释放
+    // 退出阶段事件循环即将停止，deleteLater 不会被执行，此处同步释放。
+    // context 为 null 说明已随 QML 根对象销毁，无需处理。
     for (const AppInstance &instance : m_stack)
-        delete instance.context;
+    {
+        if (instance.context && !instance.context->parent())
+            delete instance.context.data();
+    }
 
     for (const AppInstance &instance : m_backgroundCache)
-        delete instance.context;
+    {
+        if (instance.context && !instance.context->parent())
+            delete instance.context.data();
+    }
 
     m_stack.clear();
     m_backgroundCache.clear();
@@ -88,7 +95,7 @@ void PageManager::launch(const QString &appId, const QVariantMap &args)
                 // keepAlive=false：销毁
                 changeState(dead, AppState::Destroyed);
                 emit sceneDestroyed(dead.instanceId);
-                dead.context->deleteLater();
+                releaseContext(dead);
             }
 
             AppInstance &top = m_stack.last();
@@ -178,7 +185,7 @@ void PageManager::back()
     AppInstance dead = m_stack.takeLast();
     changeState(dead, AppState::Destroyed);
     emit sceneDestroyed(dead.instanceId);
-    dead.context->deleteLater();
+    releaseContext(dead);
 
     AppInstance &next = m_stack.last();
 
@@ -271,6 +278,23 @@ int PageManager::findBackground(const QString &appId) const
     }
 
     return -1;
+}
+
+void PageManager::releaseContext(AppInstance &instance)
+{
+    if (!instance.context)
+        return;
+
+    // 已有 parent 说明所有权已移交给 QML 根对象，随其销毁即可
+    if (instance.context->parent())
+    {
+        instance.context = nullptr;
+        return;
+    }
+
+    // QML 从未创建成功，没有对象树接管，此处兜底
+    instance.context->deleteLater();
+    instance.context = nullptr;
 }
 
 AppInstance *PageManager::findInstance(quint64 instanceId)

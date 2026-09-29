@@ -108,7 +108,7 @@ Item {
 
         Text {
             anchors.centerIn: parent
-            text: AppContext ? AppContext.appName : ""
+            text: _cachedName
             color: "white"
             font.pixelSize: 24
             font.bold: true

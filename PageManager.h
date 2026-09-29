@@ -60,6 +60,10 @@ private:
 
     AppInstance *findInstance(quint64 instanceId);
 
+    // 释放实例的 AppContext：已被 QML 根对象接管的交给对象树，
+    // 未接管（QML 创建失败）的自行兜底释放
+    void releaseContext(AppInstance &instance);
+
 private:
     AppRegistry *m_registry = nullptr;
 

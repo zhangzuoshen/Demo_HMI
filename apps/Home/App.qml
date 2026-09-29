@@ -31,8 +31,7 @@ BasePage {
         }
 
         Text {
-            text: "Instance #"
-                   + (AppContext ? AppContext.instanceId : 0)
+            text: "Instance #" + _cachedInstance
             color: "#DDDDDD"
             font.pixelSize: 16
         }
