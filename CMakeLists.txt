@@ -28,9 +28,13 @@ qt_add_executable(Demo_HMI
     ApplicationBootstrap.h  ApplicationBootstrap.cpp
     Log.h                   Log.cpp
     NavigationFilter.h      NavigationFilter.cpp
+    OverlayContext.h        OverlayContext.cpp
+    OverlayPriority.h
+    OverlayState.h
     PageIncubator.h         PageIncubator.cpp
     PageManager.h           PageManager.cpp
     PageView.h              PageView.cpp
+    PopupRegistry.h         PopupRegistry.cpp
     SceneContainer.h        SceneContainer.cpp
     WindowState.h
 )

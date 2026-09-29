@@ -63,6 +63,17 @@ bool AppRegistry::loadManifest(const QString &appDir)
 
     QJsonObject obj = doc.object();
 
+    //==============================
+    // 显式 "entry": "" → 只是弹窗 / Toast 的容器（如 apps/System/），
+    // 本身不是可启动的 App，不进页面栈
+    //==============================
+    if (obj.contains("entry") && obj["entry"].toString().isEmpty())
+    {
+        qCDebug(logRegistry) << "Skip (no entry, popup host only):" << appDir;
+
+        return false;
+    }
+
     AppInfo info;
 
     info.appId = obj["appId"].toString();
