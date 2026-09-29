@@ -21,8 +21,8 @@ public:
     QObject *pageManager() const;
 
 protected:
-    void geometryChanged(const QRectF &newGeometry,
-                         const QRectF &oldGeometry) override;
+    void geometryChange(const QRectF &newGeometry,
+                        const QRectF &oldGeometry) override;
 
 private slots:
     void onSceneCreated(const AppInstance &instance);

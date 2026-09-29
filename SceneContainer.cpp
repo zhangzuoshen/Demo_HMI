@@ -238,10 +238,10 @@ void SceneContainer::onSceneDestroyed(quint64 instanceId)
     view->deleteLater();
 }
 
-void SceneContainer::geometryChanged(const QRectF &newGeometry,
-                                     const QRectF &oldGeometry)
+void SceneContainer::geometryChange(const QRectF &newGeometry,
+                                    const QRectF &oldGeometry)
 {
-    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+    QQuickItem::geometryChange(newGeometry, oldGeometry);
 
     QSizeF size = newGeometry.size();
 

@@ -1,4 +1,4 @@
-import QtQuick 2.12
+import QtQuick
 import HMI.Core 1.0
 
 Item {
@@ -160,7 +160,9 @@ Item {
     //==============================
     Connections {
         target: AppContext
-        onStateChanged: {
+
+        function onStateChanged()
+        {
             if (AppContext)
                 syncState(AppContext.state)
         }

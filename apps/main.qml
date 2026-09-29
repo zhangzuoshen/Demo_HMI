@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Window 2.12
+import QtQuick
+import QtQuick.Window
 import HMI.Core 1.0
 
 Window {

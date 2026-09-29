@@ -2,7 +2,7 @@
 #define PAGEMANAGER_H
 
 #include <QObject>
-#include <QVector>
+#include <QList>
 
 #include "AppRegistry.h"
 #include "AppContext.h"
@@ -62,9 +62,9 @@ private:
 private:
     AppRegistry *m_registry = nullptr;
 
-    QVector<AppInstance> m_stack;
+    QList<AppInstance> m_stack;
 
-    QVector<AppInstance> m_backgroundCache;
+    QList<AppInstance> m_backgroundCache;
 
     quint64 m_nextInstanceId = 1;
 };
