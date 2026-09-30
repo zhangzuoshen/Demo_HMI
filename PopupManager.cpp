@@ -1,6 +1,7 @@
 #include "PopupManager.h"
 
 #include <QTimer>
+#include <utility>
 
 #include "Log.h"
 #include "OverlayState.h"
@@ -33,7 +34,7 @@ PopupManager::~PopupManager()
 
     // 退出阶段事件循环即将停止，deleteLater 不会被执行，此处同步释放。
     // context 有 parent 说明已随 QML 根对象销毁，无需处理。
-    for (const PopupInstance &instance : m_stack)
+    for (const PopupInstance &instance : std::as_const(m_stack))
     {
         if (instance.context && !instance.context->parent())
             delete instance.context.data();
@@ -79,7 +80,7 @@ quint64 PopupManager::open(const QString &key, const QVariantMap &args)
     {
         QList<quint64> victims;
 
-        for (const PopupInstance &other : m_stack)
+        for (const PopupInstance &other : std::as_const(m_stack))
         {
             if (other.info.priority < info.priority
                 && other.state != OverlayState::Closing)
@@ -88,7 +89,7 @@ quint64 PopupManager::open(const QString &key, const QVariantMap &args)
             }
         }
 
-        for (quint64 victim : victims)
+        for (quint64 victim : std::as_const(victims))
             preemptClose(victim);
     }
 
@@ -146,10 +147,10 @@ void PopupManager::closeAll()
 {
     QList<quint64> ids;
 
-    for (const PopupInstance &instance : m_stack)
+    for (const PopupInstance &instance : std::as_const(m_stack))
         ids.append(instance.popupId);
 
-    for (quint64 popupId : ids)
+    for (quint64 popupId : std::as_const(ids))
         beginClose(popupId, QVariant());
 }
 
@@ -163,7 +164,7 @@ int PopupManager::count() const
 
 bool PopupManager::hasModal() const
 {
-    for (const PopupInstance &instance : m_stack)
+    for (const PopupInstance &instance : std::as_const(m_stack))
     {
         if (instance.info.kind == PopupInfo::Modal
             && instance.state != OverlayState::Closing)
@@ -179,7 +180,7 @@ int PopupManager::topPriority() const
 {
     int top = -1;
 
-    for (const PopupInstance &instance : m_stack)
+    for (const PopupInstance &instance : std::as_const(m_stack))
         top = qMax(top, instance.info.priority);
 
     return top;
@@ -204,7 +205,7 @@ void PopupManager::onOwnerDestroyed(quint64 instanceId)
 {
     QList<quint64> ids;
 
-    for (const PopupInstance &instance : m_stack)
+    for (const PopupInstance &instance : std::as_const(m_stack))
     {
         if (instance.ownerInstanceId == instanceId)
             ids.append(instance.popupId);
@@ -216,7 +217,7 @@ void PopupManager::onOwnerDestroyed(quint64 instanceId)
     qCInfo(logPopup) << "Owner destroyed:" << instanceId
                      << "closing popups:" << ids.size();
 
-    for (quint64 popupId : ids)
+    for (quint64 popupId : std::as_const(ids))
         beginClose(popupId, QVariant());
 }
 
@@ -271,7 +272,7 @@ void PopupManager::changeState(PopupInstance &instance, OverlayState::State stat
 bool PopupManager::admit(const PopupInfo &info) const
 {
     // 已有优先级 >= 自己的弹窗在显示 → 不允许弹
-    for (const PopupInstance &other : m_stack)
+    for (const PopupInstance &other : std::as_const(m_stack))
     {
         if (other.state == OverlayState::Closing)
             continue;
@@ -363,7 +364,7 @@ quint64 PopupManager::visualTopId() const
 
     // 与 PopupContainer::restack() 同一套排序：
     // 优先级高者在上，同优先级后入栈者在上
-    for (const PopupInstance &instance : m_stack)
+    for (const PopupInstance &instance : std::as_const(m_stack))
     {
         if (instance.state == OverlayState::Closing
             || instance.state == OverlayState::Destroyed)
@@ -383,7 +384,7 @@ quint64 PopupManager::visualTopId() const
 
 bool PopupManager::hasClosing() const
 {
-    for (const PopupInstance &instance : m_stack)
+    for (const PopupInstance &instance : std::as_const(m_stack))
     {
         if (instance.state == OverlayState::Closing)
             return true;

@@ -5,6 +5,7 @@
 #include <QQuickItem>
 
 #include <algorithm>
+#include <utility>
 
 #include "Log.h"
 #include "PopupManager.h"
@@ -62,7 +63,7 @@ void PopupContainer::restack()
     //==============================
     QList<PopupView *> sorted;
 
-    for (quint64 id : m_order)
+    for (quint64 id : std::as_const(m_order))
     {
         if (PopupView *view = m_views.value(id, nullptr))
             sorted.append(view);
@@ -76,7 +77,7 @@ void PopupContainer::restack()
 
     qreal z = 0;
 
-    for (PopupView *view : sorted)
+    for (PopupView *view : std::as_const(sorted))
         view->setZ(z += 10);
 }
 
@@ -176,7 +177,7 @@ void PopupContainer::geometryChange(const QRectF &newGeometry,
 
     QSizeF size = newGeometry.size();
 
-    for (quint64 id : m_order)
+    for (quint64 id : std::as_const(m_order))
     {
         if (PopupView *view = m_views.value(id, nullptr))
             view->resize(size);

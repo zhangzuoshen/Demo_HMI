@@ -1,5 +1,7 @@
 #include "PageManager.h"
 
+#include <utility>
+
 #include "Log.h"
 
 PageManager::PageManager(AppRegistry *registry, QObject *parent)
@@ -15,13 +17,13 @@ PageManager::~PageManager()
 
     // 退出阶段事件循环即将停止，deleteLater 不会被执行，此处同步释放。
     // context 为 null 说明已随 QML 根对象销毁，无需处理。
-    for (const AppInstance &instance : m_stack)
+    for (const AppInstance &instance : std::as_const(m_stack))
     {
         if (instance.context && !instance.context->parent())
             delete instance.context.data();
     }
 
-    for (const AppInstance &instance : m_backgroundCache)
+    for (const AppInstance &instance : std::as_const(m_backgroundCache))
     {
         if (instance.context && !instance.context->parent())
             delete instance.context.data();
