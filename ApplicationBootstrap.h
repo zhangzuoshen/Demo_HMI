@@ -4,6 +4,7 @@
 class QQmlApplicationEngine;
 class PageManager;
 class PopupManager;
+class ToastManager;
 class AppRegistry;
 
 class ApplicationBootstrap
@@ -11,7 +12,8 @@ class ApplicationBootstrap
 public:
     static bool initialize(QQmlApplicationEngine &engine, AppRegistry &registry,
                            PageManager &pageManager,
-                           PopupManager &popupManager);
+                           PopupManager &popupManager,
+                           ToastManager &toastManager);
 };
 
 #endif

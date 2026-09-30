@@ -1,0 +1,12 @@
+{
+    "toastId": "playFailed",
+    "name": "播放失败",
+    "entry": "PlayFailed.qml",
+
+    "duration": 3000,
+    "position": "bottom",
+    "priority": 50,
+
+    "duplicate": "parallel",
+    "preload": true
+}

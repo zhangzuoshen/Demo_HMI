@@ -1,0 +1,12 @@
+{
+    "toastId": "lowStorage",
+    "name": "存储空间不足",
+    "entry": "LowStorage.qml",
+
+    "duration": 4000,
+    "position": "bottom",
+    "priority": 80,
+
+    "preempt": true,
+    "duplicate": "reject"
+}

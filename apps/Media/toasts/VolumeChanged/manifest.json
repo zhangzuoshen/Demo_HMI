@@ -1,0 +1,12 @@
+{
+    "toastId": "volumeChanged",
+    "name": "音量",
+    "entry": "VolumeChanged.qml",
+
+    "duration": 1500,
+    "position": "top",
+    "priority": 10,
+
+    "duplicate": "collapse",
+    "preload": true
+}

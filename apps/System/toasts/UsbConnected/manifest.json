@@ -1,0 +1,12 @@
+{
+    "toastId": "usbConnected",
+    "name": "USB 已连接",
+    "entry": "UsbConnected.qml",
+
+    "duration": 0,
+    "position": "top",
+    "priority": 30,
+
+    "duplicate": "collapse",
+    "preload": false
+}

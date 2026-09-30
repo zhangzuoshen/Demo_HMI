@@ -9,6 +9,8 @@
 #include "PageManager.h"
 #include "PopupManager.h"
 #include "PopupRegistry.h"
+#include "ToastManager.h"
+#include "ToastRegistry.h"
 #include "ApplicationBootstrap.h"
 
 int main(int argc, char *argv[])
@@ -81,8 +83,22 @@ int main(int argc, char *argv[])
     //==============================
     QQmlApplicationEngine engine;
 
+    //==============================
+    // Toast Registry / Manager
+    //==============================
+    // Toast 走同步创建，构造时就拿着 QQmlEngine，所以必须晚于 engine
+    ToastRegistry toastRegistry;
+
+    if (!toastRegistry.loadToasts(":/apps"))
+        qCInfo(logMain) << "No toast registered.";
+
+    ToastManager toastManager(&toastRegistry, &engine, &pageManager);
+
+    // preload 的 Toast 在此完成 QML 编译，首次 show 不再有编译开销
+    toastRegistry.preloadAll(&engine);
+
     if (!ApplicationBootstrap::initialize(engine, registry, pageManager,
-                                        popupManager))
+                                        popupManager, toastManager))
     {
         qCCritical(logMain) << "Failed to load Main.qml";
 

@@ -10,6 +10,7 @@ Q_LOGGING_CATEGORY(logPageManager, "PageManager")
 Q_LOGGING_CATEGORY(logScene, "Scene")
 Q_LOGGING_CATEGORY(logRegistry, "AppRegistry")
 Q_LOGGING_CATEGORY(logPopup, "Popup")
+Q_LOGGING_CATEGORY(logToast, "Toast")
 Q_LOGGING_CATEGORY(logQml, "QML")
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &ctx,

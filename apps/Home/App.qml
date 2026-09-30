@@ -6,6 +6,9 @@ BasePage {
 
     backgroundColor: "#2E8B57"
 
+    // sticky Toast 的 id，用于拔出时 dismiss
+    property int _usbToast: 0
+
     //==============================
     // 生命周期
     //==============================
@@ -55,4 +58,66 @@ BasePage {
         }
     }
 
+    //==============================
+    // Toast 示例
+    //==============================
+    // 横向排列：上面的 Column 已接近一屏，竖着加会溢出
+    Row {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 24
+        spacing: 12
+
+        AppButton {
+            text: "Toast"
+            onClicked: {
+                ToastManager.show("media/playFailed",
+                                  { "message": "无法解码该音轨",
+                                    "retryable": true })
+            }
+        }
+
+        AppButton {
+            text: "Collapse"
+            onClicked: {
+                ToastManager.show("media/volumeChanged",
+                                  { "value": Math.floor(Math.random() * 100) })
+            }
+        }
+
+        AppButton {
+            text: _usbToast ? "USB 断开" : "USB 连接"
+            onClicked: {
+                if (_usbToast)
+                {
+                    ToastManager.dismiss(_usbToast)
+                    _usbToast = 0
+                }
+                else
+                {
+                    _usbToast = ToastManager.show("system/usbConnected",
+                                                  { "device": "U盘" })
+                }
+            }
+        }
+
+        AppButton {
+            text: "Preempt"
+            onClicked: {
+                ToastManager.show("system/lowStorage", { "free": "120MB" })
+            }
+        }
+    }
+
+    //==============================
+    // Toast 上的 action（如"重试"）
+    //==============================
+    Connections {
+        target: ToastManager
+
+        function onActionTriggered(toastId, name, data)
+        {
+            console.log("[Home] toast action:", toastId, name, data)
+        }
+    }
 }

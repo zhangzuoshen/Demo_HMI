@@ -11,6 +11,8 @@
 #include "PopupContainer.h"
 #include "PopupManager.h"
 #include "SceneContainer.h"
+#include "ToastContainer.h"
+#include "ToastManager.h"
 #include "WindowState.h"
 #include "AppState.h"
 
@@ -33,7 +35,8 @@ qmlRegisterUncreatableMetaObject(EnumClass::staticMetaObject, HMI_QML_URI, \
 bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
                                       AppRegistry &registry,
                                       PageManager &pageManager,
-                                      PopupManager &popupManager)
+                                      PopupManager &popupManager,
+                                      ToastManager &toastManager)
 {
     Q_UNUSED(registry)
 
@@ -46,9 +49,11 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
 
     REG_HMI_TYPE(SceneContainer, "SceneContainer");
     REG_HMI_TYPE(PopupContainer, "PopupContainer");
+    REG_HMI_TYPE(ToastContainer, "ToastContainer");
 
     engine.rootContext()->setContextProperty("PageManager", &pageManager);
     engine.rootContext()->setContextProperty("PopupManager", &popupManager);
+    engine.rootContext()->setContextProperty("ToastManager", &toastManager);
 
     //==============================
     // 加载主界面

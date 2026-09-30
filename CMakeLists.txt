@@ -42,6 +42,10 @@ qt_add_executable(Demo_HMI
     PopupRegistry.h         PopupRegistry.cpp
     PopupView.h             PopupView.cpp
     SceneContainer.h        SceneContainer.cpp
+    ToastContainer.h        ToastContainer.cpp
+    ToastContext.h          ToastContext.cpp
+    ToastManager.h          ToastManager.cpp
+    ToastRegistry.h         ToastRegistry.cpp
     WindowState.h
 )
 
@@ -58,6 +62,10 @@ qt_add_resources(Demo_HMI "apps"
         apps/Media/manifest.json
         apps/Media/popups/TrackInfo/TrackInfo.qml
         apps/Media/popups/TrackInfo/manifest.json
+        apps/Media/toasts/PlayFailed/PlayFailed.qml
+        apps/Media/toasts/PlayFailed/manifest.json
+        apps/Media/toasts/VolumeChanged/VolumeChanged.qml
+        apps/Media/toasts/VolumeChanged/manifest.json
         apps/Settings/App.qml
         apps/Settings/manifest.json
         apps/System/manifest.json
@@ -65,9 +73,14 @@ qt_add_resources(Demo_HMI "apps"
         apps/System/popups/HintTip/manifest.json
         apps/System/popups/ThermalWarning/ThermalWarning.qml
         apps/System/popups/ThermalWarning/manifest.json
+        apps/System/toasts/LowStorage/LowStorage.qml
+        apps/System/toasts/LowStorage/manifest.json
+        apps/System/toasts/UsbConnected/UsbConnected.qml
+        apps/System/toasts/UsbConnected/manifest.json
         apps/components/AppButton.qml
         apps/components/BasePage.qml
         apps/components/BasePopup.qml
+        apps/components/BaseToast.qml
         apps/components/HeavyTestPage.qml
         apps/components/TitleBar.qml
 )

@@ -64,6 +64,22 @@ Window {
     }
 
     //==============================
+    // Toast Scene
+    //==============================
+    // z 300 > popupScene 200：Toast 是瞬时系统反馈，
+    // 即使有模态 Dialog 也该看得见（Dialog 的遮罩不拦截 Toast）
+    Item {
+        id: toastScene
+        anchors.fill: parent
+        z: 300
+
+        ToastContainer {
+            anchors.fill: parent
+            toastManager: ToastManager
+        }
+    }
+
+    //==============================
     // Debug Scene
     //==============================
     Rectangle {
