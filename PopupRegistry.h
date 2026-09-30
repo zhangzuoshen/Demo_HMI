@@ -55,7 +55,7 @@ struct PopupInfo
 /**
  * @brief 弹窗注册表
  *
- * 扫 <root>/*/popups/*/manifest.json，与 AppRegistry 同构但完全独立。
+ * 扫 <root>\/\*\/popups\/\*\/manifest.json，与 AppRegistry 同构但完全独立。
  * key 为全限定名 "<ownerAppId>/<popupId>"，如 "media/trackInfo"。
  * 简写（"trackInfo"）仅在全局唯一时可解析，否则拒绝 —— 避免以后新增一个
  * 同名弹窗就悄悄改变解析结果。

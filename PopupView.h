@@ -5,6 +5,7 @@
 #include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
+#include <QQmlIncubator>
 #include <QQuickItem>
 #include <QSizeF>
 

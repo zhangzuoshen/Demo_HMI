@@ -1,5 +1,7 @@
 import QtQuick
 
+import "../../../components"
+
 /*
  * 示例：非模态轻提示（Low 优先级 + reject）
  *

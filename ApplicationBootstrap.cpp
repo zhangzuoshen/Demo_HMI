@@ -14,6 +14,22 @@
 #include "WindowState.h"
 #include "AppState.h"
 
+//==============================
+// QML 注册公共宏定义
+//==============================
+#define HMI_QML_URI        "HMI.Core"
+#define HMI_QML_VER_MAJOR  1
+#define HMI_QML_VER_MINOR  0
+
+#define REG_HMI_ENUM(EnumClass, EnumQmlName) \
+qmlRegisterUncreatableMetaObject(EnumClass::staticMetaObject, HMI_QML_URI, \
+                                 HMI_QML_VER_MAJOR, HMI_QML_VER_MINOR, EnumQmlName, \
+                                 EnumQmlName " is an enum only")
+
+#define REG_HMI_TYPE(CppClass, QmlName) \
+    qmlRegisterType<CppClass>(HMI_QML_URI, HMI_QML_VER_MAJOR, HMI_QML_VER_MINOR, QmlName)
+
+
 bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
                                       AppRegistry &registry,
                                       PageManager &pageManager,
@@ -24,23 +40,14 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
     //==============================
     // 注册 QML 类型
     //==============================
-    qmlRegisterUncreatableMetaObject(WindowState::staticMetaObject, "HMI.Core",
-                                     1, 0, "WindowState",
-                                     "WindowState is an enum only");
+    REG_HMI_ENUM(WindowState, "WindowState");
+    REG_HMI_ENUM(AppState, "AppState");
+    REG_HMI_ENUM(OverlayState, "OverlayState");
 
-    qmlRegisterUncreatableMetaObject(AppState::staticMetaObject, "HMI.Core", 1,
-                                     0, "AppState", "AppState is an enum only");
-
-    qmlRegisterUncreatableMetaObject(OverlayState::staticMetaObject, "HMI.Core",
-                                     1, 0, "OverlayState",
-                                     "OverlayState is an enum only");
-
-    qmlRegisterType<SceneContainer>("HMI.Core", 1, 0, "SceneContainer");
-
-    qmlRegisterType<PopupContainer>("HMI.Core", 1, 0, "PopupContainer");
+    REG_HMI_TYPE(SceneContainer, "SceneContainer");
+    REG_HMI_TYPE(PopupContainer, "PopupContainer");
 
     engine.rootContext()->setContextProperty("PageManager", &pageManager);
-
     engine.rootContext()->setContextProperty("PopupManager", &popupManager);
 
     //==============================
@@ -48,7 +55,8 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
     //==============================
     engine.load(QUrl("qrc:/apps/main.qml"));
 
-    if (engine.rootObjects().isEmpty())
+    auto rootObjects = engine.rootObjects();
+    if (rootObjects.isEmpty())
     {
         qCCritical(logBootstrap) << "Failed to load main.qml";
         return false;
@@ -57,8 +65,7 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
     //==============================
     // Qt 5.12：绑定 QQmlIncubationController
     //==============================
-    QQuickWindow *window =
-        qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    QQuickWindow *window = qobject_cast<QQuickWindow *>(rootObjects.first());
 
     if (window)
     {

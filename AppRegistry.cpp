@@ -20,9 +20,9 @@ bool AppRegistry::loadApps(const QString &resourceRoot)
 
     QDir root(resourceRoot);
 
-    QFileInfoList dirs = root.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    const auto dirs = root.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
 
-    for (const QFileInfo &dir : dirs)
+    for (const QFileInfo &dir : std::as_const(dirs))
     {
         QString manifest = dir.absoluteFilePath() + "/manifest.json";
 

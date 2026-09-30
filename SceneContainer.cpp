@@ -245,7 +245,7 @@ void SceneContainer::geometryChange(const QRectF &newGeometry,
 
     QSizeF size = newGeometry.size();
 
-    for (auto view : m_cachedViews)
+    for (PageView *view : std::as_const(m_cachedViews))
     {
         if (view)
             view->resize(size);
