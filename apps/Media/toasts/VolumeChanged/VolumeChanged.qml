@@ -1,5 +1,7 @@
 import QtQuick
 
+import "../../../components"
+
 /*
  * 示例：collapse 型 Toast（Low 优先级，重复触发只保留一条）
  *

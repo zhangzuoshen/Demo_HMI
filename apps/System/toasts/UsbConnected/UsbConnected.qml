@@ -1,5 +1,7 @@
 import QtQuick
 
+import "../../../components"
+
 /*
  * 示例：sticky Toast（duration = 0）
  *

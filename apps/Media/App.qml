@@ -10,19 +10,19 @@ BasePage {
     onPageCreate: {console.log("[Media] Create")}
     onPageReady: {
         var args = AppContext.takeLaunchArgs()
-        console.log("[Media] Ready:", args.times)
+        console.log("[Media] Ready: times=", args.times)
     }
     onPageEnter: {
         var args = AppContext.takeLaunchArgs()
-        console.log("[Media] Enter:", args.times)
+        console.log("[Media] Enter: times=", args.times)
     }
     onPagePause:{
         var args = AppContext.takeLaunchArgs()
-        console.log("[Media] Pause:", args.times)
+        console.log("[Media] Pause: times=", args.times)
     }
     onPageResume: {
         var args = AppContext.takeLaunchArgs()
-        console.log("[Media] Resume:", args.times)
+        console.log("[Media] Resume: times=", args.times)
     }
     onPageDestroy: {console.log("[Media] Destroy")}
 

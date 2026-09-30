@@ -94,9 +94,6 @@ int main(int argc, char *argv[])
 
     ToastManager toastManager(&toastRegistry, &engine, &pageManager);
 
-    // preload 的 Toast 在此完成 QML 编译，首次 show 不再有编译开销
-    toastRegistry.preloadAll(&engine);
-
     if (!ApplicationBootstrap::initialize(engine, registry, pageManager,
                                         popupManager, toastManager))
     {
@@ -104,6 +101,9 @@ int main(int argc, char *argv[])
 
         return -1;
     }
+
+    // preload 的 Toast 在此完成 QML 编译，首次 show 不再有编译开销
+    toastRegistry.preloadAll(&engine);
 
     //==============================
     // 启动默认应用（Home）
