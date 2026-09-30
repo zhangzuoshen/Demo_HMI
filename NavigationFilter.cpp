@@ -5,10 +5,13 @@
 
 #include "Log.h"
 #include "PageManager.h"
+#include "PopupManager.h"
 
-NavigationFilter::NavigationFilter(PageManager *pages, QObject *parent)
+NavigationFilter::NavigationFilter(PageManager *pages, PopupManager *popups,
+                                   QObject *parent)
     : QObject(parent)
     , m_pages(pages)
+    , m_popups(popups)
 {
 }
 
@@ -27,13 +30,29 @@ bool NavigationFilter::eventFilter(QObject *obj, QEvent *event)
     if (key->key() != Qt::Key_Back && key->key() != Qt::Key_Escape)
         return false;
 
-    // 页面上没有焦点项时，事件本就无人消费，此处统一接管
-    if (!m_pages)
-        return false;
+    //==============================
+    // 1. 有弹窗 → 先关视觉最上层的那个
+    //==============================
+    if (m_popups && m_popups->count() > 0)
+    {
+        qCInfo(logPopup) << "Back key -> close top popup";
 
-    qCInfo(logPageManager) << "Back key";
+        m_popups->closeTop();
 
-    m_pages->back();
+        return true; // 吞掉，不再传给页面
+    }
 
-    return true;
+    //==============================
+    // 2. 否则 back 页面
+    //==============================
+    if (m_pages)
+    {
+        qCInfo(logPageManager) << "Back key -> page back";
+
+        m_pages->back();
+
+        return true;
+    }
+
+    return false;
 }

@@ -34,7 +34,12 @@ qt_add_executable(Demo_HMI
     PageIncubator.h         PageIncubator.cpp
     PageManager.h           PageManager.cpp
     PageView.h              PageView.cpp
+    PopupContext.h          PopupContext.cpp
+    PopupIncubator.h        PopupIncubator.cpp
+    PopupInstance.h
+    PopupManager.h          PopupManager.cpp
     PopupRegistry.h         PopupRegistry.cpp
+    PopupView.h             PopupView.cpp
     SceneContainer.h        SceneContainer.cpp
     WindowState.h
 )

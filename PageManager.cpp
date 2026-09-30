@@ -194,6 +194,25 @@ void PageManager::back()
     emit currentChanged();
 }
 
+void PageManager::setTopPageCovered(bool covered)
+{
+    if (m_stack.isEmpty())
+        return;
+
+    AppInstance &top = m_stack.last();
+
+    if (covered)
+    {
+        if (top.state == AppState::Foreground)
+            changeState(top, AppState::Covered);
+    }
+    else
+    {
+        if (top.state == AppState::Covered)
+            changeState(top, AppState::Foreground);
+    }
+}
+
 void PageManager::pageReady(quint64 instanceId)
 {
     qCInfo(logPageManager) << "pageReady:" << instanceId;

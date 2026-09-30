@@ -7,6 +7,8 @@
 #include "Log.h"
 #include "AppRegistry.h"
 #include "PageManager.h"
+#include "PopupManager.h"
+#include "PopupRegistry.h"
 #include "ApplicationBootstrap.h"
 
 int main(int argc, char *argv[])
@@ -64,11 +66,23 @@ int main(int argc, char *argv[])
     PageManager pageManager(&registry);
 
     //==============================
+    // Popup Registry / Manager
+    //==============================
+    // 没有注册任何弹窗不算错误，只记录日志
+    PopupRegistry popupRegistry;
+
+    if (!popupRegistry.loadPopups(":/apps"))
+        qCInfo(logMain) << "No popup registered.";
+
+    PopupManager popupManager(&popupRegistry, &pageManager);
+
+    //==============================
     // QML Engine
     //==============================
     QQmlApplicationEngine engine;
 
-    if (!ApplicationBootstrap::initialize(engine, registry, pageManager))
+    if (!ApplicationBootstrap::initialize(engine, registry, pageManager,
+                                        popupManager))
     {
         qCCritical(logMain) << "Failed to load Main.qml";
 

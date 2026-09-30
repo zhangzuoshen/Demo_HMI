@@ -6,14 +6,17 @@
 
 #include "Log.h"
 #include "NavigationFilter.h"
+#include "OverlayState.h"
 #include "PageManager.h"
+#include "PopupManager.h"
 #include "SceneContainer.h"
 #include "WindowState.h"
 #include "AppState.h"
 
 bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
                                       AppRegistry &registry,
-                                      PageManager &pageManager)
+                                      PageManager &pageManager,
+                                      PopupManager &popupManager)
 {
     Q_UNUSED(registry)
 
@@ -27,9 +30,15 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
     qmlRegisterUncreatableMetaObject(AppState::staticMetaObject, "HMI.Core", 1,
                                      0, "AppState", "AppState is an enum only");
 
+    qmlRegisterUncreatableMetaObject(OverlayState::staticMetaObject, "HMI.Core",
+                                     1, 0, "OverlayState",
+                                     "OverlayState is an enum only");
+
     qmlRegisterType<SceneContainer>("HMI.Core", 1, 0, "SceneContainer");
 
     engine.rootContext()->setContextProperty("PageManager", &pageManager);
+
+    engine.rootContext()->setContextProperty("PopupManager", &popupManager);
 
     //==============================
     // 加载主界面
@@ -59,7 +68,8 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
         //==============================
         // 不挂在 QML 的 Keys handler 上：那种写法依赖焦点树，
         // 弹窗抢焦点后按键就不再经过页面那一层，会误触发页面返回。
-        auto *filter = new NavigationFilter(&pageManager, window);
+        auto *filter =
+            new NavigationFilter(&pageManager, &popupManager, window);
 
         window->installEventFilter(filter);
 

@@ -29,6 +29,10 @@ public:
 
     Q_INVOKABLE void back();
 
+    // 供 PopupManager 调用：模态弹窗开合时把栈顶页面置 Covered / 恢复 Foreground。
+    // AppState::Covered 本就是"被覆盖"语义，页面可借此暂停动画、视频解码。
+    void setTopPageCovered(bool covered);
+
     QString currentAppId() const;
 
     quint64 currentInstanceId() const;
