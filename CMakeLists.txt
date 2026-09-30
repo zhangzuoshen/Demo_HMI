@@ -82,6 +82,7 @@ qt_add_resources(Demo_HMI "apps"
         apps/components/BasePopup.qml
         apps/components/BaseToast.qml
         apps/components/HeavyTestPage.qml
+        apps/components/PopupHelper.js
         apps/components/TitleBar.qml
 )
 

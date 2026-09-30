@@ -37,7 +37,7 @@ SortIncludes: false
 
 # --- 构造函数初始化列表：冒号前换行、禁止合并回签名行 ---
 BreakConstructorInitializers: BeforeComma
-## PackConstructorInitializers: Never
+PackConstructorInitializers: Never
 
 # --- Qt 宏 ---
 ForEachMacros:

@@ -1,5 +1,6 @@
 import QtQuick
 import HMI.Core 1.0
+import "PopupHelper.js" as PopupHelper
 
 Item {
     id: root
@@ -169,34 +170,16 @@ Item {
     }
 
     //==============================
-    // 弹窗辅助
+    // 弹窗辅助（实现见 PopupHelper.js）
     //==============================
-    // 没有拆成独立的 PopupHelper.js：.pragma library 的脚本是共享实例，
-    // 访问不到调用方的 QML 上下文；.js 若不声明 pragma 则每个 import
-    // 处各一份，回调注册与派发会落在不同副本上。放在基类里每个页面
-    // 一份，业务页面经 QML 作用域链直接调用（如 Media/App.qml）。
-    property var _popupCallbacks: ({})
-
+    // ⚠ 作用域约定：PopupHelper.js 是 code-behind 资源（未声明 .pragma library），
+    //   每个 import 处一份独立副本。因此只允许本文件 import 一次，
+    //   业务页面调继承来的 openPopup()；不要自己 import 后再
+    //   PopupHelper.open()，注册与派发会落在不同副本上，回调收不到
+    //   （已实测确认）。
     function openPopup(key, args, callback)
     {
-        var pid = PopupManager.open(key, args)
-
-        // ★ 返回 0 = key 不存在，或被 Reject 策略拒绝。
-        //   这两种情况都不会有 popupResult，此处不回调就会永久滞留
-        if (pid === 0)
-        {
-            console.warn("[Popup] rejected:", key)
-
-            if (callback)
-                callback(null)
-
-            return 0
-        }
-
-        if (callback)
-            _popupCallbacks[pid] = callback
-
-        return pid
+        return PopupHelper.open(key, args, callback)
     }
 
     Connections {
@@ -204,13 +187,7 @@ Item {
 
         function onPopupResult(popupId, result)
         {
-            var cb = _popupCallbacks[popupId]
-
-            if (cb)
-            {
-                delete _popupCallbacks[popupId]
-                cb(result)
-            }
+            PopupHelper.dispatch(popupId, result)
         }
     }
 }
