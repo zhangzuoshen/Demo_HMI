@@ -167,4 +167,50 @@ Item {
                 syncState(AppContext.state)
         }
     }
+
+    //==============================
+    // 弹窗辅助
+    //==============================
+    // 没有拆成独立的 PopupHelper.js：.pragma library 的脚本是共享实例，
+    // 访问不到调用方的 QML 上下文；.js 若不声明 pragma 则每个 import
+    // 处各一份，回调注册与派发会落在不同副本上。放在基类里每个页面
+    // 一份，业务页面经 QML 作用域链直接调用（如 Media/App.qml）。
+    property var _popupCallbacks: ({})
+
+    function openPopup(key, args, callback)
+    {
+        var pid = PopupManager.open(key, args)
+
+        // ★ 返回 0 = key 不存在，或被 Reject 策略拒绝。
+        //   这两种情况都不会有 popupResult，此处不回调就会永久滞留
+        if (pid === 0)
+        {
+            console.warn("[Popup] rejected:", key)
+
+            if (callback)
+                callback(null)
+
+            return 0
+        }
+
+        if (callback)
+            _popupCallbacks[pid] = callback
+
+        return pid
+    }
+
+    Connections {
+        target: PopupManager
+
+        function onPopupResult(popupId, result)
+        {
+            var cb = _popupCallbacks[popupId]
+
+            if (cb)
+            {
+                delete _popupCallbacks[popupId]
+                cb(result)
+            }
+        }
+    }
 }

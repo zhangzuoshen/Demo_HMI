@@ -14,6 +14,17 @@ PopupManager::PopupManager(PopupRegistry *registry, PageManager *pages,
     , m_pages(pages)
 {
     qCInfo(logPopup) << "PopupManager created";
+
+    //==============================
+    // 宿主页面销毁 → 关掉它弹出的弹窗
+    //==============================
+    // 必须早于页面 QML 根对象析构：PopupContext 已挂在根对象下，
+    // 页面先死会把它带走，弹窗的退场动画就崩了
+    if (m_pages)
+    {
+        connect(m_pages, &PageManager::sceneDestroyed, this,
+                &PopupManager::onOwnerDestroyed);
+    }
 }
 
 PopupManager::~PopupManager()
@@ -383,7 +394,8 @@ bool PopupManager::hasClosing() const
 
 void PopupManager::updateCoveredState()
 {
-    const bool covered = !m_stack.isEmpty();
+    // 只有模态弹窗才覆盖下层；非模态不改变页面状态
+    const bool covered = hasModal();
 
     if (covered == m_covered)
         return;

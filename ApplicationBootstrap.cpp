@@ -8,6 +8,7 @@
 #include "NavigationFilter.h"
 #include "OverlayState.h"
 #include "PageManager.h"
+#include "PopupContainer.h"
 #include "PopupManager.h"
 #include "SceneContainer.h"
 #include "WindowState.h"
@@ -35,6 +36,8 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
                                      "OverlayState is an enum only");
 
     qmlRegisterType<SceneContainer>("HMI.Core", 1, 0, "SceneContainer");
+
+    qmlRegisterType<PopupContainer>("HMI.Core", 1, 0, "PopupContainer");
 
     engine.rootContext()->setContextProperty("PageManager", &pageManager);
 

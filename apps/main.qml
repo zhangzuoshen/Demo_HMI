@@ -56,6 +56,11 @@ Window {
         id: popupScene
         anchors.fill: parent
         z: 200
+
+        PopupContainer {
+            anchors.fill: parent
+            popupManager: PopupManager
+        }
     }
 
     //==============================

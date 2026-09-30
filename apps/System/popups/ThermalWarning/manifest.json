@@ -1,0 +1,13 @@
+{
+    "popupId": "thermalWarning",
+    "name": "系统过热",
+    "entry": "ThermalWarning.qml",
+
+    "kind": "modal",
+    "dim": true,
+    "closeOnDimClick": false,
+    "closeOnBackKey": false,
+
+    "priority": 100,
+    "conflict": "preempt"
+}

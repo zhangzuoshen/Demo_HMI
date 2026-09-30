@@ -1,0 +1,13 @@
+{
+    "popupId": "hintTip",
+    "name": "轻提示",
+    "entry": "HintTip.qml",
+
+    "kind": "modeless",
+    "dim": false,
+    "closeOnDimClick": false,
+    "closeOnBackKey": false,
+
+    "priority": 10,
+    "conflict": "reject"
+}

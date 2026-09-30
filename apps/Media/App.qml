@@ -55,5 +55,37 @@ BasePage {
                 PageManager.launch("home")
             }
         }
+
+        //==============================
+        // 弹窗示例
+        //==============================
+        AppButton {
+            text: "Track Info (modal)"
+            onClicked: {
+                openPopup("media/trackInfo",
+                          { "title": "夜曲", "artist": "周杰伦" },
+                          function(result) {
+                              console.log("[Media] trackInfo result:", result)
+                          })
+            }
+        }
+
+        AppButton {
+            text: "Thermal (preempt)"
+            onClicked: {
+                openPopup("system/thermalWarning",
+                          { "message": "设备温度 92°C，即将自动关机" },
+                          function(result) {
+                              console.log("[Media] thermal result:", result)
+                          })
+            }
+        }
+
+        AppButton {
+            text: "Hint (modeless)"
+            onClicked: {
+                openPopup("system/hintTip", { "text": "已添加到收藏" })
+            }
+        }
     }
 }

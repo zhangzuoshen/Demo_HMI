@@ -1,0 +1,13 @@
+{
+    "popupId": "trackInfo",
+    "name": "音轨信息",
+    "entry": "TrackInfo.qml",
+
+    "kind": "modal",
+    "dim": true,
+    "closeOnDimClick": true,
+    "closeOnBackKey": true,
+
+    "priority": 50,
+    "conflict": "stack"
+}

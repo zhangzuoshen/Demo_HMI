@@ -1,0 +1,7 @@
+{
+    "appId": "system",
+    "name": "System",
+    "entry": "",
+
+    "comment": "entry 留空 = 不是可启动的 App，只是系统级弹窗 / Toast 的容器目录"
+}

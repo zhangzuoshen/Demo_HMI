@@ -34,6 +34,7 @@ qt_add_executable(Demo_HMI
     PageIncubator.h         PageIncubator.cpp
     PageManager.h           PageManager.cpp
     PageView.h              PageView.cpp
+    PopupContainer.h        PopupContainer.cpp
     PopupContext.h          PopupContext.cpp
     PopupIncubator.h        PopupIncubator.cpp
     PopupInstance.h
@@ -55,10 +56,18 @@ qt_add_resources(Demo_HMI "apps"
         apps/Home/manifest.json
         apps/Media/App.qml
         apps/Media/manifest.json
+        apps/Media/popups/TrackInfo/TrackInfo.qml
+        apps/Media/popups/TrackInfo/manifest.json
         apps/Settings/App.qml
         apps/Settings/manifest.json
+        apps/System/manifest.json
+        apps/System/popups/HintTip/HintTip.qml
+        apps/System/popups/HintTip/manifest.json
+        apps/System/popups/ThermalWarning/ThermalWarning.qml
+        apps/System/popups/ThermalWarning/manifest.json
         apps/components/AppButton.qml
         apps/components/BasePage.qml
+        apps/components/BasePopup.qml
         apps/components/HeavyTestPage.qml
         apps/components/TitleBar.qml
 )
