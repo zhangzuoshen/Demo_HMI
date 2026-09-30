@@ -6,8 +6,8 @@ Window {
     id: root
 
     visible: true
-    width: 800
-    height: 480
+    width: 1280
+    height: 720
     color: "#000000"
     title: "Demo HMI"
 

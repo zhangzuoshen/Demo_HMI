@@ -73,14 +73,16 @@ QString ToastRegistry::readOwnerAppId(const QString &appManifest) const
     QFile file(appManifest);
 
     if (!file.open(QIODevice::ReadOnly))
-        return QString();
+        return {};
 
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
 
     if (!doc.isObject())
-        return QString();
+        return {};
 
-    return doc.object()["appId"].toString();
+    const QJsonObject object = doc.object();
+
+    return object.value(QStringLiteral("appId")).toString();
 }
 
 bool ToastRegistry::loadManifest(const QString &ownerAppId, const QString &dir)

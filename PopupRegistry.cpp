@@ -72,14 +72,18 @@ QString PopupRegistry::readOwnerAppId(const QString &appManifest) const
     QFile file(appManifest);
 
     if (!file.open(QIODevice::ReadOnly))
-        return QString();
+        return {};
 
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonParseError error;
+    const QJsonDocument doc =
+        QJsonDocument::fromJson(file.readAll(), &error);
 
-    if (!doc.isObject())
-        return QString();
+    if (error.error != QJsonParseError::NoError || !doc.isObject())
+        return {};
 
-    return doc.object()["appId"].toString();
+    const QJsonObject object = doc.object();
+
+    return object.value(QStringLiteral("appId")).toString();
 }
 
 bool PopupRegistry::loadManifest(const QString &ownerAppId, const QString &dir)

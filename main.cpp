@@ -105,14 +105,14 @@ int main(int argc, char *argv[])
     // preload 的 Toast 在此完成 QML 编译，首次 show 不再有编译开销
     toastRegistry.preloadAll(&engine);
 
+    qCInfo(logMain) << "HMI initialized successfully.";
+
     //==============================
     // 启动默认应用（Home）
     // 放在 Main.qml 加载完成之后，
     // 保证 SceneContainer 已连接信号。
     //==============================
     pageManager.launch("home");
-
-    qCInfo(logMain) << "HMI initialized successfully.";
 
     return app.exec();
 }
