@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.16)
+# Qt 6.9 硬性要求 CMake >= 3.21（Qt6Config.cmake 内部检查），
+# 官方标注的支持下限 QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_USING_QT 是 3.22
+cmake_minimum_required(VERSION 3.22)
 
 project(Demo_HMI
     VERSION 1.0.0
@@ -6,12 +8,22 @@ project(Demo_HMI
     LANGUAGES CXX
 )
 
-# Qt 6 要求 C++17（原 Qt 5 工程使用 C++11）
+# Qt 6 要求 C++17（原 Qt 5 工程使用 C++11）。
+# Qt 6.9 的 ABI 基线仍然是 C++17，语言标准不跟着 SDK 一起升，
+# 保持与 SDK 预编译库一致，避免无收益的 ABI 风险。
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+# 开发机 SDK：~/SDK/Qt6/6.9.3/gcc_64（CMake 3.30.5）
+find_package(Qt6 6.9 REQUIRED COMPONENTS Quick)
+
+message(STATUS "Demo_HMI: Qt ${Qt6_VERSION} / CMake ${CMAKE_VERSION} / C++${CMAKE_CXX_STANDARD}")
+
+# 注：Qt 6.9 的 QT_QML_GENERATE_QMLLS_INI（给 Qt Creator 的 QML 语言服务器用）
+# 只在 qt_add_qml_module 的路径上生效。本工程走 qt_add_resources，
+# 为的是保持 :/apps/... 资源路径不变（AppRegistry / PopupRegistry / ToastRegistry
+# 都按这个前缀扫描），所以这里不开。将来若迁移到 QML 模块，再打开它。
 
 # Qt 6.3+：自动开启 AUTOMOC / AUTOUIC
 qt_standard_project_setup()
@@ -90,3 +102,17 @@ target_link_libraries(Demo_HMI PRIVATE Qt6::Quick)
 
 # 让已废弃的 Qt API 产生编译警告
 target_compile_definitions(Demo_HMI PRIVATE QT_DEPRECATED_WARNINGS)
+
+# 部署：cmake --install 时自动带上 Qt 运行库（打包到目标机 / 板子调试用）
+include(GNUInstallDirs)
+
+install(TARGETS Demo_HMI
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    BUNDLE  DESTINATION .
+)
+
+qt_generate_deploy_app_script(
+    TARGET Demo_HMI
+    OUTPUT_SCRIPT hmi_deploy_script
+)
+install(SCRIPT ${hmi_deploy_script})
