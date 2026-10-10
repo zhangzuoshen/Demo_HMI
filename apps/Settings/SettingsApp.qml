@@ -1,6 +1,5 @@
 import QtQuick
-import "../components"
-
+import HMI.Apps
 BasePage {
     backgroundColor: "#8B4513"
 

@@ -1,6 +1,5 @@
 import QtQuick
-
-import "../../../components"
+import HMI.Apps
 
 /*
  * 示例：sticky Toast（duration = 0）

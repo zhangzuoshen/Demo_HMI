@@ -1,6 +1,5 @@
 import QtQuick
-
-import "../../../components"
+import HMI.Apps
 
 /*
  * 示例：非模态轻提示（Low 优先级 + reject）

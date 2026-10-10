@@ -1,4 +1,5 @@
 import QtQuick
+import HMI.Apps
 import HMI.Core 1.0
 
 /*

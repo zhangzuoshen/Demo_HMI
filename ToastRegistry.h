@@ -48,7 +48,7 @@ struct ToastInfo
     QString ownerAppId;
     QString name;
     QString entry;
-    QString basePath;      // ":/apps/Media/toasts/PlayFailed"
+    QString basePath;      // ":/qt/qml/HMI/Apps/apps/Media/toasts/PlayFailed"（根路径见 HMI_APPS_QML_ROOT）
 
     int duration = 3000;   // 0 = sticky，不自动消失
     Position position = Bottom;

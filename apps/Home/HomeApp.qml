@@ -1,6 +1,5 @@
 import QtQuick
-import "../components"
-
+import HMI.Apps
 BasePage {
     id: root
 

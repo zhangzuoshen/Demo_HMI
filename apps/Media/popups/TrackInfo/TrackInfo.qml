@@ -1,6 +1,5 @@
 import QtQuick
-
-import "../../../components"
+import HMI.Apps
 
 /*
  * 示例：业务弹窗（模态，Normal 优先级，stack）

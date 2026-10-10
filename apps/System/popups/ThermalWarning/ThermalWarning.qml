@@ -1,6 +1,5 @@
 import QtQuick
-
-import "../../../components"
+import HMI.Apps
 
 /*
  * 示例：系统级强制弹窗（Critical 优先级 + preempt）

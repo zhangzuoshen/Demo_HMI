@@ -1,7 +1,7 @@
 {
     "appId": "home",
     "name": "Home",
-    "entry": "App.qml",
+    "entry": "HomeApp.qml",
     "icon": "icon.png",
     "version": "1.0.0",
 

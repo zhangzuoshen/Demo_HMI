@@ -1,6 +1,5 @@
 import QtQuick
-
-import "../../../components"
+import HMI.Apps
 
 /*
  * 示例：抢占型 Toast（High 优先级 + preempt）

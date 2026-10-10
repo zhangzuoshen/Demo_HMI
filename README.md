@@ -36,6 +36,25 @@ QT_QPA_PLATFORM=offscreen ./build/Demo_HMI
 
 嵌入式（EGLFS）下自动使用 OpenGL ES 3.0，桌面使用默认 OpenGL 后端。
 
+## QML 模块
+
+`apps/` 下的 QML 全部编译进 `HMI.Apps` 模块，资源路径 `qrc:/qt/qml/HMI/Apps/apps/...`：
+
+- 模块内类型互相可见，各文件用 `import HMI.Apps` 导入自己所属的模块
+  （QML 文件在 `apps/` 子目录、与模块 qmldir 不同层，隐式导入不生效）
+- C++ 侧扫描根路径由 CMake 常量 `HMI_APPS_QML_ROOT` 给出；改 URI 或资源前缀只需动 `CMakeLists.txt`
+- 目录式 `import "../../../components"` 已全部移除
+- 构建走 qmlcachegen 预编译 QML，并生成 `.qmlls.ini`（Qt Creator 的 QML 语言服务器索引用，已 gitignore）
+
+静态检查：
+
+```bash
+~/SDK/Qt6/6.9.3/gcc_64/bin/qmllint -I <构建目录> $(find apps -name "*.qml")
+```
+
+`main.qml` 里 `SceneContainer` / `PopupContainer` / `ToastContainer` 会报 "not found"，
+属正常：它们是 C++ 运行时注册的类型，qmllint 静态看不到。
+
 ## 部署（可选）
 
 ```bash

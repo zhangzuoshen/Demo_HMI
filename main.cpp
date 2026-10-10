@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     //==============================
     AppRegistry registry;
 
-    if (!registry.loadApps(":/apps"))
+    if (!registry.loadApps(QStringLiteral(HMI_APPS_QML_ROOT)))
     {
         qCCritical(logMain) << "No application found.";
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     // 没有注册任何弹窗不算错误，只记录日志
     PopupRegistry popupRegistry;
 
-    if (!popupRegistry.loadPopups(":/apps"))
+    if (!popupRegistry.loadPopups(QStringLiteral(HMI_APPS_QML_ROOT)))
         qCInfo(logMain) << "No popup registered.";
 
     PopupManager popupManager(&popupRegistry, &pageManager);
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     // Toast 走同步创建，构造时就拿着 QQmlEngine，所以必须晚于 engine
     ToastRegistry toastRegistry;
 
-    if (!toastRegistry.loadToasts(":/apps"))
+    if (!toastRegistry.loadToasts(QStringLiteral(HMI_APPS_QML_ROOT)))
         qCInfo(logMain) << "No toast registered.";
 
     ToastManager toastManager(&toastRegistry, &engine, &pageManager);

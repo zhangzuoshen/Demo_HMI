@@ -39,7 +39,7 @@ struct PopupInfo
     QString ownerAppId; // "media"
     QString name;
     QString entry;      // "TrackInfo.qml"
-    QString basePath;   // ":/apps/Media/popups/TrackInfo"
+    QString basePath;   // ":/qt/qml/HMI/Apps/apps/Media/popups/TrackInfo"（根路径见 HMI_APPS_QML_ROOT）
 
     Kind kind = Modal;
 

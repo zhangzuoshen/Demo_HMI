@@ -58,7 +58,7 @@ bool ApplicationBootstrap::initialize(QQmlApplicationEngine &engine,
     //==============================
     // 加载主界面
     //==============================
-    engine.load(QUrl("qrc:/apps/main.qml"));
+    engine.load(QUrl(QStringLiteral("qrc" HMI_APPS_QML_ROOT "/main.qml")));
 
     auto rootObjects = engine.rootObjects();
     if (rootObjects.isEmpty())

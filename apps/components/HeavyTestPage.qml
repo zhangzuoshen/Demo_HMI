@@ -1,4 +1,5 @@
 import QtQuick
+import HMI.Apps
 Item {
     id: root
     width: 800

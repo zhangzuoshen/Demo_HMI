@@ -1,7 +1,7 @@
 {
   "appId": "media",
   "name": "Media",
-  "entry": "App.qml",
+  "entry": "MediaApp.qml",
   "icon": "icon.png",
   "version": "1.0.0",
 

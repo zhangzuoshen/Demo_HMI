@@ -1,7 +1,7 @@
 {
     "appId": "settings",
     "name": "Settings",
-    "entry": "App.qml",
+    "entry": "SettingsApp.qml",
     "icon": "icon.png",
     "version": "1.0.0",
 
