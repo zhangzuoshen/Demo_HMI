@@ -37,6 +37,7 @@ qt_add_qml_module(hmi_apps
         components/BasePopup.qml
         components/BaseToast.qml
         components/HeavyTestPage.qml
+        components/StatusBar.qml
         components/TitleBar.qml
 
     # --- 入口（小写，不作为类型）与 JS 辅助：仅打包不注册 ---

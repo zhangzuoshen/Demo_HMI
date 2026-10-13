@@ -1,12 +1,13 @@
 import QtQuick
 import QtQuick.Window
 import HMI.Core 1.0
+import HMI.Apps
 
 Window {
     id: root
 
     visible: true
-    width: 1280
+    width: 1920
     height: 720
     color: "#000000"
     title: "Demo HMI"
@@ -16,7 +17,8 @@ Window {
      * 1. AppScene      ：普通应用(Home/Media/Settings)
      * 2. OverlayScene  ：CarPlay、Camera 等抢占层
      * 3. PopupScene    ：Dialog、Toast
-     * 4. DebugOverlay  ：调试信息
+     * 4. StatusBarScene：常驻状态栏 + 下拉「负一屏」面板
+     * 5. DebugOverlay  ：调试信息
      */
 
     //==============================
@@ -76,6 +78,21 @@ Window {
         ToastContainer {
             anchors.fill: parent
             toastManager: ToastManager
+        }
+    }
+
+    //==============================
+    // Status Bar Scene（负一屏）
+    //==============================
+    // z 250：在 Popup(200) 之上、Toast(300) 之下。
+    // 状态栏常驻可见；拉下时盖住弹窗，但瞬时 Toast 仍在最上。
+    Item {
+        id: statusBarScene
+        anchors.fill: parent
+        z: 250
+
+        StatusBar {
+            anchors.fill: parent
         }
     }
 
