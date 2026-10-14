@@ -39,7 +39,8 @@ qt_policy(SET QTP0004 OLD)
 
 # 走 QML 模块后这个开关才真正生效：构建时生成 qmlls.ini，
 # Qt Creator 的 QML 语言服务器才能正确索引本工程
-set(QT_QML_GENERATE_QMLLS_INI ON)
+set(QML_IMPORT_PATH "${CMAKE_BINARY_DIR}/qml" CACHE STRING "" FORCE)
+set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "" FORCE)
 
 # ---------------------------------------------------------------
 # 所有 QML 模块共用 URI 根 HMI.Apps，资源落在
